@@ -1,0 +1,23 @@
+{
+  "name": "@sovrin/jwt",
+  "version": "0.1.0",
+  "description": "ultra simple jwt token de-/encoding",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "ts-node src/index.ts",
+    "test": "mocha -r ts-node/register/transpile-only --full-trace 'test/**/*.ts'",
+    "coverage": "nyc npm test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.10.3",
+    "mocha": "^9.1.2",
+    "nyc": "^15.1.0",
+    "ts-node": "^10.3.0",
+    "typescript": "^4.4.3"
+  },
+  "author": "",
+  "license": "ISC"
+}

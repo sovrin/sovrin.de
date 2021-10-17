@@ -1,0 +1,28 @@
+{
+  "name": "@sovrin/frontend",
+  "version": "0.1.0",
+  "description": "",
+  "private": true,
+  "main": "index.js",
+  "dependencies": {
+    "@sovrin/jwt": "*",
+    "next": "^11.1.2",
+    "postcss-import": "^14.0.2",
+    "postcss-nesting": "^8.0.1",
+    "react": "^17",
+    "react-dom": "^17",
+    "swr": "^1.0.1",
+    "tailwindcss": "^2.2.16"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^17.0.27",
+    "prop-types": "^15.7.2"
+  }
+}
