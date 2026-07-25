@@ -1,0 +1,14 @@
+node_modules
+.output
+.nuxt
+.git
+.idea
+.claude
+tools
+*.log
+.DS_Store
+.env
+.env.*
+Dockerfile
+.dockerignore
+docker-compose.yml

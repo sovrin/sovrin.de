@@ -1,0 +1,162 @@
+:root {
+    --color-bg: #060606;
+    --color-fg: #f5f5f5;
+    /* Space Grotesk = human copy (name, bio); JetBrains Mono = machine layer
+       (status line, caret, year, labels). */
+    --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    --phi: 1.618;
+    --golden: 61.8%; /* 1 / φ */
+
+    /* φ modular spacing scale (root = 16px) — every gap is one φⁿ step. */
+    --space-3xs: 0.382rem; /* φ⁻² */
+    --space-2xs: 0.618rem; /* φ⁻¹ */
+    --space-xs: 1rem;      /* φ⁰  */
+    --space-sm: 1.618rem;  /* φ¹  */
+    --space-md: 2.618rem;  /* φ²  */
+    --space-lg: 4.236rem;  /* φ³  */
+    --space-xl: 6.854rem;  /* φ⁴  */
+
+    --fs-micro: 0.6875rem; /* 11px — utility labels, footer */
+    --fs-label: 0.75rem;   /* 12px — eyebrow */
+    --fs-pill: 0.8125rem;  /* 13px — link pills */
+    --fs-body: 0.9375rem;  /* 15px — body copy */
+    --fs-display: clamp(2.618rem, 8vw, 6rem);
+}
+
+html,
+body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: var(--fs-body);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* Faint floor tint so the pre-load void isn't flat black; the mesh's own shading
+   is the actual light source. */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: radial-gradient(
+            120% 90% at 74% 30%,
+            color-mix(in oklab, var(--color-fg) 3%, transparent),
+            transparent 60%
+    );
+    pointer-events: none;
+}
+
+/* Film grain. */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    opacity: 0.05;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+    background-size: 90px 90px;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+::selection {
+    background: var(--color-fg);
+    color: var(--color-bg);
+}
+
+.mesh {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    /* Tinted at runtime with the avatar's dominant colour (Avatar.vue sets
+       --mesh-color); warm-gold fallback so it's never a black surface. */
+    color: var(--mesh-color, #b5842a);
+    /* Time-of-day mood: brightness/saturation set from the visitor's local hour
+       (app.vue). Unset (no-JS) = full daylight. */
+    filter: brightness(var(--tod-bright, 1)) saturate(var(--tod-sat, 1));
+    transition: color 0.8s ease, filter 1.2s ease, opacity 0.6s ease;
+    overflow: hidden;
+    pointer-events: none;
+    /* One warm ambient pool the facets sit on, sharing the shading's focal point. */
+    background: radial-gradient(
+            126% 114% at 74% 30%,
+            color-mix(in oklab, currentColor 15%, transparent) 0%,
+            color-mix(in oklab, currentColor 5%, transparent) 45%,
+            transparent 72%
+    );
+    /* Full-bleed vignette: eases the far corners only, never to black. */
+    mask: radial-gradient(135% 130% at 74% 30%, #000 52%, rgba(0, 0, 0, 0.3) 86%, rgba(0, 0, 0, 0.1) 100%);
+    /* Flat plane ("ground") for SSR / no-JS / pre-canvas; the canvas grows the
+       crystal out of it. */
+    animation: fade-in 0.6s ease both;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+}
+
+/* Once the canvas crystal is up, retire the flat SSR plane. */
+.shell.canvas-active .mesh {
+    opacity: 0;
+}
+
+/* The one crystal (created by MeshCanvas.client.vue). The relief growth (in JS)
+   is the whole reveal — no element transition needed. */
+.mesh-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    filter: brightness(var(--tod-bright, 1)) saturate(var(--tod-sat, 1));
+    -webkit-mask: radial-gradient(135% 130% at 74% 30%, #000 52%, rgba(0, 0, 0, 0.3) 86%, rgba(0, 0, 0, 0.1) 100%);
+    mask: radial-gradient(135% 130% at 74% 30%, #000 52%, rgba(0, 0, 0, 0.3) 86%, rgba(0, 0, 0, 0.1) 100%);
+}
+
+.rise {
+    animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--d, 0s);
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rise {
+        animation: none;
+    }
+
+    .mesh {
+        animation: none;
+    }
+}
