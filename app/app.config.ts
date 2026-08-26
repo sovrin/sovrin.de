@@ -1,11 +1,11 @@
 export default defineAppConfig({
     portfolio: {
-        phrase: 'building the web, one detail at a time',
+        phrase: 'less is more',
         user: 'sovrin',
-        role: 'web developer',
+        role: 'developer',
         url: 'https://sovrin.de',
         github: 'https://github.com/sovrin',
         linkedin: 'https://www.linkedin.com/in/oleg-kamlowski-2166a224b/',
-        email: 'me@gsovrin.de',
+        email: 'contact@sovrin.de',
     },
 })
