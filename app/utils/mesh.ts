@@ -1,6 +1,13 @@
-// Shared low-poly geometry generator. Deterministic from a seed (mulberry32) so
-// the server island and the client canvas produce the IDENTICAL crystal — the
-// server bakes a static SVG (SSR / no-JS), the client relights the same facets.
+// Low-poly geometry generator. Deterministic from a seed (mulberry32), so the
+// same seed always yields the same crystal — that's what lets the server's seed
+// travel to the client via useState('meshSeed') and produce a matching mesh.
+//
+// Only MeshCanvas.client.vue consumes this; there is no server-rendered mesh.
+// SSR / no-JS gets the flat CSS plane (`.mesh` in main.css) instead.
+//
+// Tuning dials live in ./mesh-constants.mjs, shared with the OG card generator.
+import {MESH} from './mesh-constants.mjs'
+
 export interface Facet {
   pts: number[] // [x1,y1, x2,y2, x3,y3] in geometry units
   cx: number
@@ -17,8 +24,6 @@ export interface Mesh {
   facets: Facet[]
 }
 
-const PHI = 1.618
-
 function prng(seed: number) {
   let a = seed >>> 0
   return () => {
@@ -33,15 +38,17 @@ export function generateMesh(seed: number): Mesh {
   const rnd = prng(seed)
   const rand = (min: number, max: number) => min + rnd() * (max - min)
 
-  const COLS = 44, ROWS = 28, CELL = 10
+  const {
+    PHI, COLS, ROWS, CELL, FU, FV, SIGMA, FLOOR, RELIEF_START, RELIEF_SPAN,
+    AMP_SWELL, AMP_FOLD, AMP_JITTER, FOLD_U_FREQ, FOLD_U_PHASE, FOLD_V_FREQ, FOLD_V_PHASE,
+  } = MESH
+
   const W = COLS * CELL, H = ROWS * CELL, J = CELL / (PHI * PHI)
-  const FU = 0.74, FV = 0.3, SIGMA = 0.34, FLOOR = 0.12
-  const AMP_SWELL = 11, AMP_FOLD = 5.5, AMP_JITTER = 4.5
   const HALF_DIAG = Math.hypot(0.5, 0.5)
 
   const relief = (u: number, v: number) => {
     const t = (u + (1 - v)) / 2
-    const s = Math.min(1, Math.max(0, (t - 0.12) / 0.7))
+    const s = Math.min(1, Math.max(0, (t - RELIEF_START) / RELIEF_SPAN))
     const sm = s * s * (3 - 2 * s)
     return FLOOR + (1 - FLOOR) * sm
   }
@@ -56,7 +63,7 @@ export function generateMesh(seed: number): Mesh {
       const y = r * CELL + (edge ? 0 : rand(-J, J))
       const u = x / W, v = y / H, rel = relief(u, v)
       const swell = AMP_SWELL * Math.exp(-(((u - FU) ** 2) + ((v - FV) ** 2)) / (2 * SIGMA * SIGMA))
-      const fold = AMP_FOLD * Math.sin(u * Math.PI * 2.4 + 0.6) * Math.cos(v * Math.PI * 1.8 + 0.3)
+      const fold = AMP_FOLD * Math.sin(u * Math.PI * FOLD_U_FREQ + FOLD_U_PHASE) * Math.cos(v * Math.PI * FOLD_V_FREQ + FOLD_V_PHASE)
       row.push({x, y, z: swell + rel * fold + rel * rand(-AMP_JITTER, AMP_JITTER)})
     }
     pts.push(row)

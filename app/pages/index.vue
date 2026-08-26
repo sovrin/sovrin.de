@@ -3,8 +3,10 @@ const year = new Date().getFullYear()
 const {portfolio} = useAppConfig()
 const {user, phrase, role, url, github, linkedin} = portfolio
 
-// One seed shared by the flat SSR plane and the client canvas (via the payload).
-// canvasActive hides the flat plane once the canvas crystal is up.
+// Seed for the client canvas, created here so SSR and the client agree on it
+// (useState serialises it into the payload). The flat `.mesh` plane below is a
+// pure CSS gradient and uses no seed; canvasActive retires it once the crystal
+// has drawn.
 const meshSeed = useState('meshSeed', () => Math.floor(Math.random() * 2 ** 31))
 const canvasActive = ref(false)
 
