@@ -116,7 +116,9 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-/* Frost pooled bottom-left, seating the copy over the mesh. */
+/* Frost pooled bottom-left, seating the copy over the mesh. The ellipse is
+   taller than the viewport and narrower than it because the copy is a tall
+   narrow column; error.vue keeps the old round pool, its content is short. */
 .edge-blur {
   position: fixed;
   inset: 0;
@@ -124,8 +126,8 @@ onMounted(() => {
   pointer-events: none;
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
-  -webkit-mask-image: radial-gradient(86% 86% at 0% 108%, #000 0%, #000 40%, transparent 86%);
-  mask-image: radial-gradient(86% 86% at 0% 108%, #000 0%, #000 40%, transparent 86%);
+  -webkit-mask-image: radial-gradient(76% 122% at 4% 99%, #000 0%, #000 44%, transparent 89%);
+  mask-image: radial-gradient(76% 122% at 4% 99%, #000 0%, #000 44%, transparent 89%);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -144,8 +146,8 @@ onMounted(() => {
 
 @media (max-width: 640px) {
   .edge-blur {
-    -webkit-mask-image: radial-gradient(150% 50% at 40% 109%, #000 0%, #000 46%, transparent 88%);
-    mask-image: radial-gradient(150% 50% at 40% 109%, #000 0%, #000 46%, transparent 88%);
+    -webkit-mask-image: radial-gradient(150% 98% at 40% 104%, #000 0%, #000 50%, transparent 92%);
+    mask-image: radial-gradient(150% 98% at 40% 104%, #000 0%, #000 50%, transparent 92%);
   }
 }
 
