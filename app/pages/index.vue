@@ -94,7 +94,9 @@ onMounted(() => {
         {{ phrase }}
       </p>
 
-      <div class="meta rise" style="--d: 0.2s">
+      <Projects class="rise" style="--d: 0.2s"/>
+
+      <div class="meta rise" style="--d: 0.26s">
         <SocialLinks/>
         <span class="sep" aria-hidden="true"/>
         <span class="year">{{ year }}</span>
