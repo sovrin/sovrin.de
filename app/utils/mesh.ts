@@ -5,24 +5,23 @@
 // Only MeshCanvas.client.vue consumes this; there is no server-rendered mesh.
 // SSR / no-JS gets the flat CSS plane (`.mesh` in main.css) instead.
 //
+// Output is a packed vertex buffer for WebGL rather than facet objects: every
+// vertex carries all three corners of its triangle (so the vertex shader can
+// compute the facet normal itself, at any relief) plus its own corner index.
+//
 // Tuning dials live in ./mesh-constants.mjs, shared with the OG card generator.
 import {MESH} from './mesh-constants.mjs'
-
-export interface Facet {
-  pts: number[] // [x1,y1, x2,y2, x3,y3] in geometry units
-  cx: number
-  cy: number
-  nx: number
-  ny: number
-  nz: number
-  dist: number // normalised distance of centroid from the focal point
-}
 
 export interface Mesh {
   W: number
   H: number
-  facets: Facet[]
+  /** Triangle count. */
+  count: number
+  /** count*3 vertices × FLOATS_PER_VERTEX: [x0,y0,z0, x1,y1,z1, x2,y2,z2, corner]. */
+  data: Float32Array
 }
+
+export const FLOATS_PER_VERTEX = 10
 
 function prng(seed: number) {
   let a = seed >>> 0
@@ -44,7 +43,6 @@ export function generateMesh(seed: number): Mesh {
   } = MESH
 
   const W = COLS * CELL, H = ROWS * CELL, J = CELL / (PHI * PHI)
-  const HALF_DIAG = Math.hypot(0.5, 0.5)
 
   const relief = (u: number, v: number) => {
     const t = (u + (1 - v)) / 2
@@ -71,37 +69,29 @@ export function generateMesh(seed: number): Mesh {
 
   const cross2 = (p: Pt, q: Pt, r: Pt) =>
     (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x)
-  const r1 = (n: number) => Math.round(n * 10) / 10
 
-  const facets: Facet[] = []
+  const count = COLS * ROWS * 2
+  const data = new Float32Array(count * 3 * FLOATS_PER_VERTEX)
+  let o = 0
+  const emit = (a: Pt, b: Pt, c: Pt) => {
+    for (let k = 0; k < 3; k++) {
+      data[o++] = a.x; data[o++] = a.y; data[o++] = a.z
+      data[o++] = b.x; data[o++] = b.y; data[o++] = b.z
+      data[o++] = c.x; data[o++] = c.y; data[o++] = c.z
+      data[o++] = k
+    }
+  }
+
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const tl = pts[r][c], tr = pts[r][c + 1], bl = pts[r + 1][c], br = pts[r + 1][c + 1]
       const acOk = cross2(tl, br, tr) * cross2(tl, br, bl) < 0
       const bdOk = cross2(tr, bl, tl) * cross2(tr, bl, br) < 0
       const useAC = acOk && bdOk ? rnd() > 0.5 : acOk
-      const tris = useAC
-        ? [[tl, tr, br], [tl, br, bl]]
-        : [[tl, tr, bl], [tr, br, bl]]
-      for (const [a, b, cc] of tris) {
-        const ux = b.x - a.x, uy = b.y - a.y, uz = b.z - a.z
-        const vx = cc.x - a.x, vy = cc.y - a.y, vz = cc.z - a.z
-        let nx = uy * vz - uz * vy
-        let ny = uz * vx - ux * vz
-        let nz = ux * vy - uy * vx
-        const nl = Math.hypot(nx, ny, nz) || 1
-        nx /= nl; ny /= nl; nz /= nl
-        if (nz < 0) {nx = -nx; ny = -ny; nz = -nz}
-        const cx = (a.x + b.x + cc.x) / 3
-        const cy = (a.y + b.y + cc.y) / 3
-        const dist = Math.hypot((cx - FU * W) / W, (cy - FV * H) / H) / HALF_DIAG
-        facets.push({
-          pts: [r1(a.x), r1(a.y), r1(b.x), r1(b.y), r1(cc.x), r1(cc.y)],
-          cx, cy, nx, ny, nz, dist,
-        })
-      }
+      if (useAC) {emit(tl, tr, br); emit(tl, br, bl)}
+      else {emit(tl, tr, bl); emit(tr, br, bl)}
     }
   }
 
-  return {W, H, facets}
+  return {W, H, count, data}
 }

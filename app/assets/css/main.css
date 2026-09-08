@@ -145,8 +145,8 @@ a {
     opacity: 0;
 }
 
-/* The one crystal (created by MeshCanvas.client.vue). The relief growth (in JS)
-   is the whole reveal — no element transition needed. */
+/* The one crystal (a WebGL canvas created by MeshCanvas.client.vue). The relief
+   growth (in the shader) is the whole reveal — no element transition needed. */
 .mesh-canvas {
     position: fixed;
     inset: 0;

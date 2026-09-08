@@ -67,3 +67,31 @@ export const MESH = Object.freeze({
   HI_FALL_MIN: 0.7,
   HI_SCALE: 0.62,
 })
+
+// Live-canvas dials (the OG card is a still).
+export const LIVE = Object.freeze({
+  // Entrance: relief 0→1, easeOutExpo — a fast rise decelerating hard into
+  // place, once, after the page has colorized. Then the geometry is static.
+  POP_MS: 760,
+
+  // Movement: the mesh itself drifts. Two long, slow waves sway the vertices
+  // sideways (neighbours move together, so no facet can fold over, and the
+  // outer edge is pinned so no gap opens at the viewport edge), and every
+  // vertex rises and falls a little on its own, so facets keep tilting in and
+  // out of the light. Amplitudes in geometry units (a cell is 10, the vertex
+  // jitter is ±3.8).
+  MOVE_XY: 3.5,           // sideways sway
+  MOVE_Z: 3.0,            // slow height swell shared by neighbours
+  MOVE_ZV: 2.0,           // per-vertex twinkle in height
+  MOVE_SPEED: 0.4,        // multiplier on all of the above
+
+  // Reflections: the facets are mirrors. A few soft lights drift slowly across
+  // the sky on non-repeating paths, and a facet lights up when its reflection
+  // direction points at one — so glints travel over the crystal as the lights
+  // move. The fixed base light (MESH.LIGHT) still does the shading; this only
+  // adds the specular play. Gated by relief and falloff: none behind the copy.
+  REFLECT_STRENGTH: 0.55, // glint core brightness (0 = off)
+  REFLECT_SHINE: 26,      // specular exponent — higher = smaller, sharper glints
+  REFLECT_SPEED: 0.6,     // multiplier on the lights' drift
+  REFLECT_WHITE: 0.7,     // glint colour: 0 = pure accent, 1 = near-white
+})
