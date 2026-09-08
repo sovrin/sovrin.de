@@ -4,10 +4,14 @@ const {portfolio} = useAppConfig()
 const {user, phrase, role, url, github, linkedin} = portfolio
 
 // Seed for the client canvas, created here so SSR and the client agree on it
-// (useState serialises it into the payload). The flat `.mesh` plane below is a
-// pure CSS gradient and uses no seed; canvasActive retires it once the crystal
-// has drawn.
-const meshSeed = useState('meshSeed', () => Math.floor(Math.random() * 2 ** 31))
+// (useState serialises it into the payload). `?seed=N` pins it, for comparable
+// screenshots. The flat `.mesh` plane below is a pure CSS gradient and uses no
+// seed; canvasActive retires it once the crystal has drawn.
+const route = useRoute()
+const meshSeed = useState('meshSeed', () => {
+  const pinned = Number(route.query.seed)
+  return Number.isFinite(pinned) && pinned > 0 ? Math.floor(pinned) : Math.floor(Math.random() * 2 ** 31)
+})
 const canvasActive = ref(false)
 
 const ogImage = `${url}/og.png`
