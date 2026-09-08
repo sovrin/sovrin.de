@@ -75,26 +75,38 @@ onMounted(() => {
 
     const col = `${cr},${cg},${cb}`
     for (let i = 0; i < N; i++) {
+      const o = i * 6
+      const x1 = PX[o] * scale + offX, y1 = PX[o + 1] * scale + offY
+      const x2 = PX[o + 2] * scale + offX, y2 = PX[o + 3] * scale + offY
+      const x3 = PX[o + 4] * scale + offX, y3 = PX[o + 5] * scale + offY
+
+      // Flatten the crystal toward the left, where the copy sits: per-facet relief
+      // ramps from 0 at the left edge to full past ~62% of the viewport width, so
+      // the facets dissolve into a smooth plane behind the text and only re-emerge
+      // as the true crystal on the right. Screen-space (not geometry) so it tracks
+      // the content column regardless of the cover crop.
+      const su = ((x1 + x2 + x3) / 3) / vw
+      const e = Math.min(1, Math.max(0, (su - 0.08) / 0.54))
+      const relief = e * e * (3 - 2 * e) // smoothstep
+      const gf = growth * relief
+
       // Effective normal blends from flat (0,0,1) to the full facet normal.
-      let nx = NX[i] * growth
-      let ny = NY[i] * growth
-      let nz = (1 - growth) + NZ[i] * growth
+      let nx = NX[i] * gf
+      let ny = NY[i] * gf
+      let nz = (1 - gf) + NZ[i] * gf
       const nl = Math.hypot(nx, ny, nz) || 1
       nx /= nl; ny /= nl; nz /= nl
 
       const lamB = Math.max(0, nx * Lbx + ny * Lby + nz * Lbz)
       let op = (MESH.OP_BASE + MESH.OP_LAMBERT * lamB) * FALL[i]
       if (op > MESH.OP_CAP) op = MESH.OP_CAP
-      const o = i * 6
-      const x1 = PX[o] * scale + offX, y1 = PX[o + 1] * scale + offY
-      const x2 = PX[o + 2] * scale + offX, y2 = PX[o + 3] * scale + offY
-      const x3 = PX[o + 4] * scale + offX, y3 = PX[o + 5] * scale + offY
       ctx.beginPath()
       ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.closePath()
       ctx.fillStyle = `rgba(${col},${op})`
       ctx.fill()
       if (lamB > MESH.HI_LAMBERT_MIN && FALL[i] > MESH.HI_FALL_MIN) {
-        const hi = (lamB - MESH.HI_LAMBERT_MIN) * MESH.HI_SCALE * FALL[i] * Math.min(1, growth)
+        // gf (not growth): the highlight fades out on the flattened left too.
+        const hi = (lamB - MESH.HI_LAMBERT_MIN) * MESH.HI_SCALE * FALL[i] * Math.min(1, gf)
         if (hi > 0) {ctx.fillStyle = `rgba(245,245,245,${hi})`; ctx.fill()}
       }
     }

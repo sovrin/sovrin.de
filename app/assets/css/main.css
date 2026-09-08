@@ -1,10 +1,28 @@
+/* Liberation Mono — one font for the whole page. Self-hosted (OFL, see
+   /public/fonts/LICENSE) so it renders everywhere, not just on Linux. */
+@font-face {
+    font-family: 'Liberation Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/LiberationMono-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Liberation Mono';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/LiberationMono-Bold.woff2') format('woff2');
+}
+
 :root {
     --color-bg: #060606;
     --color-fg: #f5f5f5;
-    /* Space Grotesk = human copy (name, bio); JetBrains Mono = machine layer
-       (status line, caret, year, labels). */
-    --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    /* One typeface, everywhere — the whole page is the terminal. --font-sans and
+       --font-mono are kept as aliases so components read the same source. */
+    --font-sans: 'Liberation Mono', ui-monospace, 'Courier New', monospace;
+    --font-mono: 'Liberation Mono', ui-monospace, 'Courier New', monospace;
 
     --phi: 1.618;
     --golden: 61.8%; /* 1 / φ */

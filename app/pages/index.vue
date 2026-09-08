@@ -96,11 +96,17 @@ onMounted(() => {
 
       <Projects class="rise" style="--d: 0.2s"/>
 
-      <div class="meta rise" style="--d: 0.26s">
-        <SocialLinks/>
-        <span class="sep" aria-hidden="true"/>
-        <span class="year">{{ year }}</span>
-      </div>
+      <section class="contact rise" style="--d: 0.26s" aria-label="Contact and social links">
+        <div class="contact-head">
+          <span class="sigil" aria-hidden="true">$</span>
+          <span>cat ~/contact</span>
+        </div>
+        <div class="meta">
+          <SocialLinks/>
+          <span class="sep" aria-hidden="true"/>
+          <span class="year">{{ year }}</span>
+        </div>
+      </section>
     </main>
   </div>
 </template>
@@ -116,9 +122,9 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-/* Frost pooled bottom-left, seating the copy over the mesh. The ellipse is
-   taller than the viewport and narrower than it because the copy is a tall
-   narrow column; error.vue keeps the old round pool, its content is short. */
+/* Frost that climbs the whole left column, flattening the mesh gradually toward
+   the copy and fading back to the sharp crystal on the right. A faint scrim in
+   the same footprint deepens contrast so the text seats. */
 .edge-blur {
   position: fixed;
   inset: 0;
@@ -126,8 +132,9 @@ onMounted(() => {
   pointer-events: none;
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
-  -webkit-mask-image: radial-gradient(76% 122% at 4% 99%, #000 0%, #000 44%, transparent 89%);
-  mask-image: radial-gradient(76% 122% at 4% 99%, #000 0%, #000 44%, transparent 89%);
+  background: radial-gradient(88% 142% at 0% 100%, rgba(6, 6, 6, 0.5) 0%, rgba(6, 6, 6, 0.16) 46%, transparent 82%);
+  -webkit-mask-image: radial-gradient(88% 142% at 0% 100%, #000 0%, #000 44%, transparent 86%);
+  mask-image: radial-gradient(88% 142% at 0% 100%, #000 0%, #000 44%, transparent 86%);
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -146,8 +153,9 @@ onMounted(() => {
 
 @media (max-width: 640px) {
   .edge-blur {
-    -webkit-mask-image: radial-gradient(150% 98% at 40% 104%, #000 0%, #000 50%, transparent 92%);
-    mask-image: radial-gradient(150% 98% at 40% 104%, #000 0%, #000 50%, transparent 92%);
+    background: radial-gradient(150% 96% at 40% 112%, rgba(6, 6, 6, 0.5) 0%, rgba(6, 6, 6, 0.16) 48%, transparent 84%);
+    -webkit-mask-image: radial-gradient(150% 96% at 40% 112%, #000 0%, #000 46%, transparent 90%);
+    mask-image: radial-gradient(150% 96% at 40% 112%, #000 0%, #000 46%, transparent 90%);
   }
 }
 
@@ -213,9 +221,21 @@ onMounted(() => {
   text-wrap: pretty;
 }
 
+.contact {
+  margin-top: var(--space-md);
+}
+
+/* Machine-layer eyebrow, matching `$ whoami` and `$ ls ~/projects`. */
+.contact-head {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  color: rgba(245, 245, 245, 0.5);
+  margin-bottom: var(--space-2xs);
+}
+
 /* Footer line: links · separator · year, clustered left. */
 .meta {
-  margin-top: var(--space-md);
   display: flex;
   align-items: center;
   gap: var(--space-xs) var(--space-sm);

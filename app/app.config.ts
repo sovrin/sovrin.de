@@ -1,6 +1,6 @@
 export default defineAppConfig({
     portfolio: {
-        phrase: 'less is more',
+        phrase: 'everything essential, nothing more',
         user: 'sovrin',
         role: 'developer',
         url: 'https://sovrin.de',
