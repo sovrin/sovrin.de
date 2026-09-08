@@ -6,6 +6,18 @@ import type {Project} from '~~/server/api/projects.get'
 const {data: projects} = await useFetch<Project[]>('/api/projects', {
   default: () => [],
 })
+
+// Coarse "last touched" stamp — day granularity keeps SSR and client in sync.
+function relTime(iso: string): string {
+  const then = Date.parse(iso)
+  if (!then) return ''
+  const days = Math.floor((Date.now() - then) / 86_400_000)
+  if (days <= 0) return 'today'
+  if (days < 7) return `${days}d`
+  if (days < 30) return `${Math.floor(days / 7)}w`
+  if (days < 365) return `${Math.floor(days / 30)}mo`
+  return `${Math.floor(days / 365)}y`
+}
 </script>
 
 <template>
@@ -20,9 +32,11 @@ const {data: projects} = await useFetch<Project[]>('/api/projects', {
         <a class="project" :href="p.url" target="_blank" rel="noreferrer">
           <span class="row">
             <span class="name">{{ p.name }}</span>
+            <span class="leader" aria-hidden="true"/>
             <span class="stats">
               <span v-if="p.language" class="lang">{{ p.language }}</span>
               <span v-if="p.stars" class="stars">★ {{ p.stars }}</span>
+              <span class="when">{{ relTime(p.pushedAt) }}</span>
             </span>
           </span>
           <span v-if="p.description" class="desc">{{ p.description }}</span>
@@ -113,22 +127,40 @@ const {data: projects} = await useFetch<Project[]>('/api/projects', {
   border-radius: 2px;
 }
 
-/* Thin rule keeps the name and its stats visually joined across the row. */
+/* Dotted index leader bridging name → metadata; warms to the accent on hover. */
+.leader {
+  flex: 1 1 auto;
+  align-self: baseline;
+  height: 0;
+  transform: translateY(-0.28em);
+  border-bottom: 1px dotted rgba(245, 245, 245, 0.16);
+  transition: border-color 0.24s ease;
+}
+
+.project:hover .leader,
+.project:focus-visible .leader {
+  border-bottom-color: color-mix(in oklab, var(--mesh-color, #b5842a) 55%, transparent);
+}
+
 .stats {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   align-items: baseline;
-  justify-content: flex-end;
   gap: var(--space-2xs);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   letter-spacing: 0.06em;
   color: rgba(245, 245, 245, 0.42);
-  min-width: 0;
 }
 
 .stars {
   color: var(--mesh-color, rgba(245, 245, 245, 0.5));
+}
+
+/* Right-most, dimmest column — a quiet "last touched" signal. */
+.when {
+  color: rgba(245, 245, 245, 0.3);
+  font-variant-numeric: tabular-nums;
 }
 
 .desc {
@@ -142,7 +174,8 @@ const {data: projects} = await useFetch<Project[]>('/api/projects', {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .name::after {
+  .name::after,
+  .leader {
     transition: none;
   }
 }
