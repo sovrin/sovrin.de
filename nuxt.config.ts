@@ -5,6 +5,14 @@ export default defineNuxtConfig({
     experimental: {
         componentIslands: true,
     },
+    runtimeConfig: {
+        // Optional PAT to lift GitHub's 60/h unauthenticated rate limit. Set via NUXT_GITHUB_TOKEN.
+        githubToken: '',
+        public: {
+            // GitHub account whose latest repos are listed. Override via NUXT_PUBLIC_GITHUB_USER.
+            githubUser: 'sovrin',
+        },
+    },
     app: {
         head: {
             link: [
