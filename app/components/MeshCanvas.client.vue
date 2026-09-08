@@ -3,11 +3,15 @@
 // canvas. Entrance: starts FLAT (relief 0) and, once the page has colorized,
 // snaps the relief flat→full (easeOutExpo) so the facets pop "out of the ground".
 // After that it's static, lit by a fixed base light.
-import {generateMesh} from '~/utils/mesh'
+//
+// Client-only: there is no server-rendered mesh. SSR / no-JS shows the flat CSS
+// plane (`.mesh` in main.css), which this retires via `ready` once it has drawn.
+//
+// Shading dials come from utils/mesh-constants.mjs, shared with the OG card.
+import {MESH} from '~/utils/mesh-constants.mjs'
 
 const props = defineProps<{seed: number}>()
 const emit = defineEmits<{ready: []}>()
-const PHI = 1.618
 
 onMounted(() => {
   const host = document.querySelector('.shell') || document.body
@@ -27,11 +31,11 @@ onMounted(() => {
   for (let i = 0; i < N; i++) {
     const f = facets[i]
     NX[i] = f.nx; NY[i] = f.ny; NZ[i] = f.nz
-    FALL[i] = 0.34 + 0.66 * Math.pow(1 / PHI, f.dist * 2.2)
+    FALL[i] = MESH.FALL_BASE + MESH.FALL_RANGE * Math.pow(1 / MESH.PHI, f.dist * MESH.FALL_EXP)
     for (let k = 0; k < 6; k++) PX[i * 6 + k] = f.pts[k]
   }
 
-  let Lbx = 0.42, Lby = -0.56, Lbz = 0.72
+  let [Lbx, Lby, Lbz] = MESH.LIGHT
   const bl = Math.hypot(Lbx, Lby, Lbz); Lbx /= bl; Lby /= bl; Lbz /= bl
 
   let vw = 0, vh = 0, scale = 1, offX = 0, offY = 0
@@ -61,7 +65,7 @@ onMounted(() => {
   let growth = 0 // relief: 0 flat → 1 full
   const draw = () => {
     ctx.clearRect(0, 0, vw, vh)
-    const fx = 0.74 * vw, fy = 0.3 * vh, pr = Math.max(vw, vh) * 0.95
+    const fx = MESH.FU * vw, fy = MESH.FV * vh, pr = Math.max(vw, vh) * 0.95
     const g = ctx.createRadialGradient(fx, fy, 0, fx, fy, pr)
     g.addColorStop(0, `rgba(${cr},${cg},${cb},0.16)`)
     g.addColorStop(0.45, `rgba(${cr},${cg},${cb},0.05)`)
@@ -94,14 +98,15 @@ onMounted(() => {
       nx /= nl; ny /= nl; nz /= nl
 
       const lamB = Math.max(0, nx * Lbx + ny * Lby + nz * Lbz)
-      let op = (0.12 + 0.7 * lamB) * FALL[i]
-      if (op > 0.95) op = 0.95
+      let op = (MESH.OP_BASE + MESH.OP_LAMBERT * lamB) * FALL[i]
+      if (op > MESH.OP_CAP) op = MESH.OP_CAP
       ctx.beginPath()
       ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.closePath()
       ctx.fillStyle = `rgba(${col},${op})`
       ctx.fill()
-      if (lamB > 0.82 && FALL[i] > 0.7) {
-        const hi = (lamB - 0.82) * 0.62 * FALL[i] * Math.min(1, gf)
+      if (lamB > MESH.HI_LAMBERT_MIN && FALL[i] > MESH.HI_FALL_MIN) {
+        // gf (not growth): the highlight fades out on the flattened left too.
+        const hi = (lamB - MESH.HI_LAMBERT_MIN) * MESH.HI_SCALE * FALL[i] * Math.min(1, gf)
         if (hi > 0) {ctx.fillStyle = `rgba(245,245,245,${hi})`; ctx.fill()}
       }
     }

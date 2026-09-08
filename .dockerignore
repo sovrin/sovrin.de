@@ -4,7 +4,7 @@ node_modules
 .git
 .idea
 .claude
-tools
+scripts
 *.log
 .DS_Store
 .env

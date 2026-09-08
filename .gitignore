@@ -23,3 +23,17 @@ logs
 .env
 .env.*
 !.env.example
+tmp/
+plans/**/*
+!plans/templates/*
+screenshots/*
+docs/screenshots/*
+docs/assets/*
+docs/research/*
+docs/session-reports/*
+docs/test-cases/*
+claude-prime-*.zip
+.mcp.json
+CLAUDE.local.md
+.tasks/
+.claude.bk/
