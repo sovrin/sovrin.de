@@ -15,13 +15,11 @@ export default defineNuxtConfig({
     },
     app: {
         head: {
+            // Self-hosted Liberation Mono — preload both weights so the terminal
+            // text paints without a fallback flash. No third-party font requests.
             link: [
-                {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
-                {rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: ''},
-                {
-                    rel: 'stylesheet',
-                    href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap',
-                },
+                {rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/LiberationMono-Regular.woff2', crossorigin: ''},
+                {rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/LiberationMono-Bold.woff2', crossorigin: ''},
             ],
         },
     },
