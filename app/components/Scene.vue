@@ -65,13 +65,12 @@ onMounted(() => {
   z-index: 1;
   pointer-events: none;
   backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
   background: radial-gradient(88% 142% at 0% 100%, rgba(6, 6, 6, 0.5) 0%, rgba(6, 6, 6, 0.16) 46%, transparent 82%);
   -webkit-mask-image: radial-gradient(88% 142% at 0% 100%, #000 0%, #000 44%, transparent 86%);
   mask-image: radial-gradient(88% 142% at 0% 100%, #000 0%, #000 44%, transparent 86%);
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+@supports not (backdrop-filter: blur(1px)) {
   .edge-blur {
     background: rgba(6, 6, 6, 0.72);
   }
@@ -80,7 +79,6 @@ onMounted(() => {
 @media (prefers-reduced-transparency: reduce) {
   .edge-blur {
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
     background: rgba(6, 6, 6, 0.72);
   }
 }
@@ -111,7 +109,6 @@ onMounted(() => {
     linear-gradient(225deg, rgba(245, 245, 245, 0.07), transparent 42%),
     rgba(6, 6, 6, 0.42);
   backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
 }
 
@@ -130,7 +127,7 @@ onMounted(() => {
   );
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+@supports not (backdrop-filter: blur(1px)) {
   .content {
     background: rgba(6, 6, 6, 0.86);
   }
@@ -139,7 +136,6 @@ onMounted(() => {
 @media (prefers-reduced-transparency: reduce) {
   .content {
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
     background: rgba(6, 6, 6, 0.86);
   }
 }
