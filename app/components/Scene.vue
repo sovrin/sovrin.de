@@ -93,25 +93,66 @@ onMounted(() => {
   }
 }
 
+/* Glass panel the copy sits on — cut like one facet of the crystal, the
+   corner nearest the light chamfered. The sheen and the brighter edge both come
+   from the mesh's upper-right light, so the panel reads as part of the scene. */
 .content {
+  --gutter: clamp(var(--space-xs), 4vw, var(--space-lg));
+  --cut: var(--space-md);
   position: relative;
   z-index: 2;
-  margin-top: auto; /* dock to the bottom */
-  width: 100%;
+  margin: auto var(--gutter) var(--gutter); /* dock to the bottom */
   max-width: 640px;
-  padding: 0 clamp(var(--space-md), 6vw, var(--space-xl)) clamp(var(--space-lg), 9vh, var(--space-xl));
+  padding: var(--space-md);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  background:
+    linear-gradient(225deg, rgba(245, 245, 245, 0.07), transparent 42%),
+    rgba(6, 6, 6, 0.42);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+}
+
+/* Hairline traced around the cut shape: the outer facet minus a 1px inset. */
+.content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(225deg, rgba(245, 245, 245, 0.26), rgba(245, 245, 245, 0.06) 55%);
+  clip-path: polygon(
+      evenodd,
+      0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%,
+      1px 1px, 1px calc(100% - 1px), calc(100% - 1px) calc(100% - 1px),
+      calc(100% - 1px) calc(var(--cut) + 0.41px), calc(100% - var(--cut) - 0.41px) 1px
+  );
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .content {
+    background: rgba(6, 6, 6, 0.86);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .content {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(6, 6, 6, 0.86);
+  }
+}
+
+@media (max-width: 640px) {
+  .content {
+    padding: var(--space-sm);
+  }
 }
 
 @supports (height: 100svh) {
   .shell {
     min-height: 100svh;
-  }
-
-  .content {
-    padding-bottom: clamp(var(--space-lg), 9svh, var(--space-xl));
   }
 }
 </style>

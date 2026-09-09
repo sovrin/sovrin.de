@@ -9,9 +9,10 @@
 #   scripts/og.sh --no-config      # keep the template's own text
 #   scripts/og.sh --keep-html      # leave the rendered HTML around for debugging
 #
-# Text (name / phrase / domain) is read from app/app.config.ts by default, and the
-# mesh tuning dials are read from app/utils/mesh-constants.mjs — the same module the
-# site's canvas uses — so the card cannot drift from the site.
+# Text (name / phrase / domain) is read from app/app.config.ts by default, the
+# mesh tuning dials from app/utils/mesh-constants.mjs — the same module the site's
+# canvas uses — and the typeface from public/fonts, so the card cannot drift from
+# the site.
 # Env: CHROME_BIN=/path/to/chrome to pick a browser.
 
 set -euo pipefail
@@ -20,6 +21,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="$ROOT/scripts/og.template.html"
 CONFIG="$ROOT/app/app.config.ts"
 CONSTANTS="$ROOT/app/utils/mesh-constants.mjs"
+FONTS="$ROOT/public/fonts"
 OUT="$ROOT/public/og.png"
 WIDTH=1200
 HEIGHT=630
@@ -74,12 +76,12 @@ PAGE="$WORK/og.html"
 cleanup() { if [ "$KEEP_HTML" != 1 ]; then rm -rf "$WORK"; fi; }
 trap cleanup EXIT
 
-TEMPLATE="$TEMPLATE" PAGE="$PAGE" CONFIG="$CONFIG" CONSTANTS="$CONSTANTS" SEED="$SEED" USE_CONFIG="$USE_CONFIG" \
+TEMPLATE="$TEMPLATE" PAGE="$PAGE" CONFIG="$CONFIG" CONSTANTS="$CONSTANTS" FONTS="$FONTS" SEED="$SEED" USE_CONFIG="$USE_CONFIG" \
 node --input-type=module <<'NODE'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 
-const { TEMPLATE, PAGE, CONFIG, CONSTANTS, SEED, USE_CONFIG } = process.env
+const { TEMPLATE, PAGE, CONFIG, CONSTANTS, FONTS, SEED, USE_CONFIG } = process.env
 let html = readFileSync(TEMPLATE, 'utf8')
 
 // Single source of truth for the mesh's geometry and shading. The template is
@@ -90,6 +92,16 @@ const { MESH } = await import(pathToFileURL(CONSTANTS).href)
 html = html.replace(
   '</head>',
   `<script>window.__MESH__=${JSON.stringify(MESH)};</script>\n</head>`,
+)
+
+// The site's self-hosted typeface. The page renders from a temp dir, so the
+// faces are injected with absolute file:// URLs rather than referenced relatively.
+const face = (weight, file) =>
+  `@font-face{font-family:'Liberation Mono';font-weight:${weight};font-style:normal;`
+  + `src:url('${pathToFileURL(`${FONTS}/${file}`).href}') format('woff2')}`
+html = html.replace(
+  '</head>',
+  `<style>${face(400, 'LiberationMono-Regular.woff2')}${face(700, 'LiberationMono-Bold.woff2')}</style>\n</head>`,
 )
 
 // Deterministic mesh: seed Math.random before the template's own script runs.
