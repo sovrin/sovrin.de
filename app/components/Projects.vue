@@ -22,10 +22,7 @@ function relTime(iso: string): string {
 
 <template>
   <section v-if="projects.length" class="projects" aria-label="Latest projects">
-    <div class="head">
-      <span class="sigil" aria-hidden="true">$</span>
-      <span class="cmd">ls ~/projects</span>
-    </div>
+    <Prompt class="head">ls ~/projects</Prompt>
 
     <ul class="list">
       <li v-for="p in projects" :key="p.name">
@@ -52,19 +49,8 @@ function relTime(iso: string): string {
   margin-top: var(--space-md);
 }
 
-/* Machine-layer eyebrow, matching the `$ whoami` status line. */
 .head {
-  font-family: var(--font-mono);
-  font-size: var(--fs-label);
-  letter-spacing: 0.08em;
-  color: rgba(245, 245, 245, 0.5);
   margin-bottom: var(--space-2xs);
-}
-
-.head .sigil {
-  margin-right: 0.4em;
-  color: var(--mesh-color, rgba(245, 245, 245, 0.4));
-  transition: color 0.8s ease;
 }
 
 .list {
