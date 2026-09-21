@@ -14,6 +14,8 @@ export interface NoteMeta {
     date: string
     description: string | null
     tags: string[]
+    // Drafts render at their URL (noindex) but stay out of the list, feed and sitemap.
+    draft: boolean
 }
 
 export interface Note extends NoteMeta {
@@ -36,11 +38,11 @@ const toDate = (value: unknown): Date | null => {
     return Number.isNaN(d.getTime()) ? null : d
 }
 
-// Frontmatter → metadata, or null for anything that shouldn't be served: a
-// missing title or date, or `draft: true`.
+// Frontmatter → metadata, or null for a file that can't be served (no title or
+// no usable date).
 const toMeta = (slug: string, data: Record<string, unknown>): NoteMeta | null => {
     const date = toDate(data.date)
-    if (typeof data.title !== 'string' || !date || data.draft === true) return null
+    if (typeof data.title !== 'string' || !date) return null
 
     return {
         slug,
@@ -48,6 +50,7 @@ const toMeta = (slug: string, data: Record<string, unknown>): NoteMeta | null =>
         date: date.toISOString().slice(0, 10),
         description: typeof data.description === 'string' ? data.description : null,
         tags: Array.isArray(data.tags) ? data.tags.filter((t): t is string => typeof t === 'string') : [],
+        draft: data.draft === true,
     }
 }
 
@@ -105,11 +108,14 @@ const render = (doc: Doc) => {
     return html
 }
 
+// Published notes only, newest first — what the list, the feed and the sitemap show.
 export const getNotes = async (): Promise<NoteMeta[]> =>
     (await readEntries('notes'))
         .flatMap(({slug, data}) => toMeta(slug, data) ?? [])
+        .filter((n) => !n.draft)
         .sort((a, b) => b.date.localeCompare(a.date))
 
+// One note by slug, drafts included — sharing the URL is how a draft gets read.
 export const getNote = async (input: string): Promise<Note | null> => {
     const slug = parseSlug(input)
     if (!slug) return null

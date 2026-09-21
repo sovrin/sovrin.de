@@ -4,7 +4,9 @@ date: 2026-01-01
 description: One-line summary, shown in the list and as the meta description.
 tags: ['example', 'markdown']
 # draft: false is the default — a note with no `draft` field is published.
-# Set `draft: true` to hide it; remove the line (or set false) to publish.
+# A draft still renders at /notes/<slug> (noindex) but stays out of the list,
+# the feed and the sitemap — share the URL to get it read. Remove the line (or
+# set false) to publish.
 draft: true
 ---
 

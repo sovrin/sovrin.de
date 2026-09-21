@@ -29,6 +29,8 @@ useHead({
   title: `${current.title} · ${user}`,
   link: [{rel: 'canonical', href: canonical}],
   meta: [
+    // A draft is reachable by its URL but must not be indexed or previewed.
+    ...(current.draft ? [{name: 'robots', content: 'noindex, nofollow'}] : []),
     {name: 'description', content: description},
     {property: 'og:type', content: 'article'},
     {property: 'og:site_name', content: user},
@@ -55,6 +57,7 @@ useHead({
     <p class="stamp rise" style="--d: 0.14s">
       <time :datetime="note.date">{{ note.date }}</time>
       <template v-if="note.tags.length"> · {{ note.tags.join(' · ') }}</template>
+      <span v-if="note.draft" class="draft"> · draft</span>
     </p>
 
     <div class="prose rise" style="--d: 0.2s" v-html="note.html"/>
@@ -94,6 +97,11 @@ useHead({
   letter-spacing: 0.18em;
   color: rgba(245, 245, 245, 0.42);
   font-variant-numeric: tabular-nums;
+}
+
+/* The draft stamp glows in the accent, so it can't be mistaken for a tag. */
+.draft {
+  color: var(--mesh-color, rgba(245, 245, 245, 0.7));
 }
 
 .prose {
