@@ -40,6 +40,8 @@
     --fs-label: 0.75rem;   /* 12px — eyebrow */
     --fs-pill: 0.8125rem;  /* 13px — link pills */
     --fs-body: 0.9375rem;  /* 15px — body copy */
+    --fs-lead: 1.1875rem;  /* 19px — note sub-headings */
+    --fs-title: clamp(1.618rem, 5vw, 2.618rem); /* note titles: φ¹–φ² rem */
     --fs-display: clamp(2.618rem, 8vw, 6rem);
 }
 

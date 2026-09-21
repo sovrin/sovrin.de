@@ -45,7 +45,7 @@ export default defineCachedEventHandler(
         return repos
             .filter((r) => !r.fork && !r.archived && !r.private)
             .sort((a, b) => Date.parse(b.pushed_at) - Date.parse(a.pushed_at))
-            .slice(0, 5)
+            .slice(0, 4)
             .map((r) => ({
                 name: r.name,
                 description: r.description,

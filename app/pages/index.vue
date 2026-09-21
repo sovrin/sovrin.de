@@ -7,16 +7,9 @@ const ogImage = `${url}/og.png`
 
 useHead({
   title: user,
-  htmlAttrs: {lang: 'en'},
-  link: [
-    {rel: 'canonical', href: url},
-    {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
-    {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'},
-    {rel: 'apple-touch-icon', href: '/apple-touch-icon.png'},
-  ],
+  link: [{rel: 'canonical', href: url}],
   meta: [
     {name: 'description', content: phrase},
-    {name: 'theme-color', content: '#060606'},
     {property: 'og:type', content: 'website'},
     {property: 'og:site_name', content: user},
     {property: 'og:title', content: user},
@@ -49,7 +42,7 @@ useHead({
 </script>
 
 <template>
-  <Scene>
+  <div>
     <div class="who rise" style="--d: 0s">
       <Avatar :user="user" :size="40"/>
       <Prompt class="status">
@@ -65,7 +58,9 @@ useHead({
 
     <Projects class="rise" style="--d: 0.2s"/>
 
-    <section class="contact rise" style="--d: 0.26s" aria-label="Contact and social links">
+    <NoteList class="rise" style="--d: 0.26s" prompt="ls ~/notes" :limit="3"/>
+
+    <section class="contact rise" style="--d: 0.32s" aria-label="Contact and social links">
       <Prompt class="contact-head">cat ~/contact</Prompt>
       <div class="meta">
         <SocialLinks/>
@@ -73,7 +68,7 @@ useHead({
         <span class="year">{{ year }}</span>
       </div>
     </section>
-  </Scene>
+  </div>
 </template>
 
 <style scoped>

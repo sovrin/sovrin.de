@@ -1,5 +1,6 @@
 <script setup lang="ts">
-// A sigil glyph + label link. External links open in a new tab.
+// A sigil glyph + label link. Internal hrefs navigate through the router (the
+// scene stays mounted); external ones open in a new tab.
 const props = defineProps<{
   label: string
   sigil: string
@@ -9,15 +10,15 @@ const props = defineProps<{
 </script>
 
 <template>
-  <a
-      :href="props.href"
+  <NuxtLink
+      :to="props.href"
       :target="props.external ? '_blank' : undefined"
       :rel="props.external ? 'noreferrer' : undefined"
       class="pill"
   >
     <span class="sigil" aria-hidden="true">{{ props.sigil }}</span>{{ props.label }}
     <span v-if="props.external" class="sr-only"> (opens in a new tab)</span>
-  </a>
+  </NuxtLink>
 </template>
 
 <style scoped>

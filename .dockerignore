@@ -12,3 +12,5 @@ scripts
 Dockerfile
 .dockerignore
 docker-compose.yml
+# mounted at runtime, not baked into the image
+content
