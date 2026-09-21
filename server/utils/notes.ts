@@ -25,7 +25,7 @@ export interface Note extends NoteMeta {
 
 // Slugs are file names, so keep them boring: no leading dot, no separators. A
 // leading underscore is allowed — it's the unlisted marker, see toMeta.
-const SLUG = /^[a-z0-9_][a-z0-9._-]{0,63}$/
+const SLUG = /^[a-z0-9_][a-z0-9._-]{0,255}$/
 
 export const parseSlug = (input: string): string | null => {
     const slug = input.trim().toLowerCase()
