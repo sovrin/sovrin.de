@@ -5,9 +5,9 @@ description: One-line summary, shown in the list and as the meta description.
 tags: ['example', 'markdown']
 # draft: false is the default — a note with no `draft` field is published.
 # A draft still renders at /notes/<slug> (noindex) but stays out of the list,
-# the feed and the sitemap — share the URL to get it read. Remove the line (or
-# set false) to publish.
-draft: true
+# the feed and the sitemap — share the URL to get it read. A file name starting
+# with `_` (like this one) is unlisted the same way, whatever `draft` says.
+draft: false
 ---
 
 Body is **markdown**. A blank line starts a new paragraph.

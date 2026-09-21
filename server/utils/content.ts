@@ -41,7 +41,7 @@ const memoize = (signature: Signature) => <V>(load: Loader<V>): Loader<V> => {
     }
 }
 
-// `_`-prefixed files are templates: kept beside the real ones, never served.
+// `_`-prefixed files are unlisted: readable by path, absent from the listing.
 const markdownFiles = async (dir: string) =>
     (await readdir(dir)).filter((f) => f.endsWith('.md') && !f.startsWith('_')).sort()
 

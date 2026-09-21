@@ -14,7 +14,8 @@ export interface NoteMeta {
     date: string
     description: string | null
     tags: string[]
-    // Drafts render at their URL (noindex) but stay out of the list, feed and sitemap.
+    // Unlisted: renders at its URL (noindex) but stays out of the list, feed and
+    // sitemap. Either `draft: true` in the frontmatter or a `_`-prefixed file name.
     draft: boolean
 }
 
@@ -22,8 +23,9 @@ export interface Note extends NoteMeta {
     html: string
 }
 
-// Slugs are file names, so keep them boring: no leading dot, no separators.
-const SLUG = /^[a-z0-9][a-z0-9._-]{0,63}$/
+// Slugs are file names, so keep them boring: no leading dot, no separators. A
+// leading underscore is allowed — it's the unlisted marker, see toMeta.
+const SLUG = /^[a-z0-9_][a-z0-9._-]{0,63}$/
 
 export const parseSlug = (input: string): string | null => {
     const slug = input.trim().toLowerCase()
@@ -50,7 +52,7 @@ const toMeta = (slug: string, data: Record<string, unknown>): NoteMeta | null =>
         date: date.toISOString().slice(0, 10),
         description: typeof data.description === 'string' ? data.description : null,
         tags: Array.isArray(data.tags) ? data.tags.filter((t): t is string => typeof t === 'string') : [],
-        draft: data.draft === true,
+        draft: data.draft === true || slug.startsWith('_'),
     }
 }
 
