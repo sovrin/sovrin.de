@@ -50,7 +50,8 @@ export default defineCachedEventHandler(
                 name: r.name,
                 description: r.description,
                 url: r.html_url,
-                homepage: r.homepage || null,
+                // Only real web URLs — the field is free text on GitHub.
+                homepage: /^https?:\/\//i.test(r.homepage ?? '') ? r.homepage : null,
                 language: r.language,
                 stars: r.stargazers_count,
                 pushedAt: r.pushed_at,
