@@ -5,6 +5,7 @@
   "scripts": {
     "build": "nuxt build",
     "build:og": "scripts/og.sh",
+    "build:shots": "scripts/shots.sh",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

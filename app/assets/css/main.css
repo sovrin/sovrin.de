@@ -1,257 +1,156 @@
-/* Liberation Mono — one font for the whole page. Self-hosted (OFL, see
-   /public/fonts/LICENSE) so it renders everywhere, not just on Linux. */
-@font-face {
-    font-family: 'Liberation Mono';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url('/fonts/LiberationMono-Regular.woff2') format('woff2');
-}
-
-@font-face {
-    font-family: 'Liberation Mono';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url('/fonts/LiberationMono-Bold.woff2') format('woff2');
-}
-
+/* Site-wide additions on top of aequitas. Unlayered, so they win over its
+   @layer ae.* rules without !important. */
 :root {
-    --color-bg: #060606;
-    --color-fg: #f5f5f5;
-    /* One typeface, everywhere — the whole page is the terminal. --font-sans and
-       --font-mono are kept as aliases so components read the same source. */
-    --font-sans: 'Liberation Mono', ui-monospace, 'Courier New', monospace;
-    --font-mono: 'Liberation Mono', ui-monospace, 'Courier New', monospace;
-
-    --phi: 1.618;
-    --golden: 61.8%; /* 1 / φ */
-
-    /* φ modular spacing scale (root = 16px) — every gap is one φⁿ step. */
-    --space-3xs: 0.382rem; /* φ⁻² */
-    --space-2xs: 0.618rem; /* φ⁻¹ */
-    --space-xs: 1rem;      /* φ⁰  */
-    --space-sm: 1.618rem;  /* φ¹  */
-    --space-md: 2.618rem;  /* φ²  */
-    --space-lg: 4.236rem;  /* φ³  */
-    --space-xl: 6.854rem;  /* φ⁴  */
-
-    --fs-micro: 0.6875rem; /* 11px — utility labels, footer */
-    --fs-label: 0.75rem;   /* 12px — eyebrow */
-    --fs-pill: 0.8125rem;  /* 13px — link pills */
-    --fs-body: 0.9375rem;  /* 15px — body copy */
-    --fs-lead: 1.1875rem;  /* 19px — note sub-headings */
-    --fs-title: clamp(1.618rem, 5vw, 2.618rem); /* note titles: φ¹–φ² rem */
-    --fs-display: clamp(2.618rem, 8vw, 6rem);
-
-    /* Motion: one strong ease-out for anything entering or responding, one
-       ease-in-out for things that morph in place. Hover-ins run --dur-in; the
-       way back is always quicker (--dur-out), so leaving never lingers. */
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-    --dur-press: 140ms;
-    --dur-in: 220ms;
-    --dur-out: 140ms;
+    /* The yellow wall in app/assets/me.jpg as an OKLCH hue (its most common
+       colour, 251 200 79). Re-measure it if the photo changes. */
+    --ae-hue: 86;
+    --ae-neutral-hue: 86;
+    /* aequitas puts the system mono first; the site wants its bundled Geist Mono. */
+    --ae-font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+    /* The wall: the photo's yellow at full strength, and the ink set on it. Both
+       follow the sampled hue. */
+    --wall: oklch(0.83 0.165 var(--ae-hue));
+    --wall-ink: oklch(0.17 0.02 var(--ae-hue));
 }
 
-html,
 body {
-    background-color: var(--color-bg);
-    color: var(--color-fg);
-    font-family: var(--font-sans);
-    font-size: var(--fs-body);
-    line-height: 1.6;
+    background: var(--ae-bg);
+}
+
+.sections {
+    display: grid;
+    gap: var(--ae-space-8);
+}
+
+/* Section head: a small title and a muted aside over one hairline. */
+.sheet-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--ae-space-4);
+    padding-block-end: var(--ae-space-3);
+    border-block-end: 1px solid var(--ae-border);
+    font-family: var(--ae-font-mono);
+    font-size: var(--ae-text-s);
+    color: var(--ae-text-muted);
+}
+
+.sheet-head :is(h1, h2) {
+    margin: 0;
+    font-family: var(--ae-font-sans);
+    font-size: var(--ae-text-base);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--ae-text);
+}
+
+.sheet-head a {
+    color: inherit;
+}
+
+/* A project or note row: title over description, metadata on the end. The
+   title link is stretched over the row (::before), so the row is one target. */
+.entries {
     margin: 0;
     padding: 0;
-    min-height: 100%;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    -webkit-tap-highlight-color: transparent;
+    list-style: none;
 }
 
-/* Faint floor tint so the pre-load void isn't flat black; the mesh's own shading
-   is the actual light source. */
-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: -2;
-    background: radial-gradient(
-            120% 90% at 74% 30%,
-            color-mix(in oklab, var(--color-fg) 3%, transparent),
-            transparent 60%
-    );
-    pointer-events: none;
+.entries[data-cols='2'] {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--ae-space-6);
 }
 
-/* Film grain. */
-body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    opacity: 0.05;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
-    background-size: 90px 90px;
-}
-
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-::selection {
-    background: var(--color-fg);
-    color: var(--color-bg);
-}
-
-.mesh {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    /* Tinted at runtime with the avatar's dominant colour (Avatar.vue sets
-       --mesh-color); warm-gold fallback so it's never a black surface. */
-    color: var(--mesh-color, #b5842a);
-    /* Time-of-day mood: brightness/saturation set from the visitor's local hour
-       (Scene.vue). Unset (no-JS) = full daylight. */
-    filter: brightness(var(--tod-bright, 1)) saturate(var(--tod-sat, 1));
-    transition: color 0.8s ease, filter 1.2s ease, opacity 0.6s ease;
-    overflow: hidden;
-    pointer-events: none;
-    /* One warm ambient pool the facets sit on, sharing the shading's focal point. */
-    background: radial-gradient(
-            126% 114% at 74% 30%,
-            color-mix(in oklab, currentColor 15%, transparent) 0%,
-            color-mix(in oklab, currentColor 5%, transparent) 45%,
-            transparent 72%
-    );
-    /* Full-bleed vignette: eases the far corners only, never to black. */
-    mask: radial-gradient(135% 130% at 74% 30%, #000 52%, rgba(0, 0, 0, 0.3) 86%, rgba(0, 0, 0, 0.1) 100%);
-    /* Flat plane ("ground") for SSR / no-JS / pre-canvas; the canvas grows the
-       crystal out of it. */
-    animation: fade-in 0.6s ease both;
-}
-
-@keyframes fade-in {
-    from {
-        opacity: 0;
+@media (max-width: 64rem) {
+    .entries[data-cols='2'] {
+        grid-template-columns: 1fr;
     }
 }
 
-/* Once the canvas crystal is up, retire the flat SSR plane. */
-.shell.canvas-active .mesh {
-    opacity: 0;
+.entry {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    /* Any height the metadata adds goes under the description, not between. */
+    grid-template-rows: auto 1fr;
+    gap: var(--ae-space-1) var(--ae-space-5);
+    margin-inline: calc(-1 * var(--ae-space-3));
+    padding: var(--ae-space-4) var(--ae-space-3);
+    border-radius: var(--ae-radius-m);
+    transition: background-color 160ms ease-out;
 }
 
-/* The one crystal (a WebGL canvas created by MeshCanvas.client.vue). The relief
-   growth (in the shader) is the whole reveal — no element transition needed. */
-.mesh-canvas {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    filter: brightness(var(--tod-bright, 1)) saturate(var(--tod-sat, 1));
-    -webkit-mask: radial-gradient(135% 130% at 74% 30%, #000 52%, rgba(0, 0, 0, 0.3) 86%, rgba(0, 0, 0, 0.1) 100%);
-    mask: radial-gradient(135% 130% at 74% 30%, #000 52%, rgba(0, 0, 0, 0.3) 86%, rgba(0, 0, 0, 0.1) 100%);
-}
-
-/* Copy inside the Scene dock, shared by the index and error pages. */
-.who {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2xs);
-    margin: 0 0 var(--space-sm);
-}
-
-.heading {
-    margin: 0;
-    font-family: var(--font-sans);
-    font-size: var(--fs-display);
+.entry .title {
+    font-size: var(--ae-text-l);
     font-weight: 500;
-    letter-spacing: -0.03em;
-    line-height: 0.9;
+    letter-spacing: -0.015em;
+    color: var(--ae-text);
+    text-decoration: none;
+    transition: color 160ms ease-out;
 }
 
-.bio {
-    margin: var(--space-2xs) 0 0;
-    max-width: 42ch;
-    font-size: var(--fs-body);
-    line-height: 1.6;
-    color: rgba(245, 245, 245, 0.58);
+.entry .title::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+}
+
+.entry .title:focus-visible {
+    outline: none;
+}
+
+.entry .title:focus-visible::before {
+    outline: 2px solid var(--ae-accent);
+    outline-offset: 2px;
+}
+
+.entry .desc {
+    grid-column: 1;
+    color: var(--ae-text-muted);
     text-wrap: pretty;
 }
 
-/* Footer line: links · separator · year, clustered left. */
-.meta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs) var(--space-sm);
-    flex-wrap: wrap;
+.entry .meta {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: start;
+    padding-block-start: 0.35em;
+    display: grid;
+    justify-items: end;
+    font-family: var(--ae-font-mono);
+    font-size: var(--ae-text-s);
+    color: var(--ae-text-muted);
 }
 
-.sep {
-    width: 1px;
-    height: 0.9em;
-    background: rgba(245, 245, 245, 0.18);
-}
+/* Real pointers only: a tap on touch would leave the row stuck 'hovered'. */
+@media (hover: hover) and (pointer: fine) {
+    .entry:hover {
+        background: var(--ae-fill);
+    }
 
-.year {
-    font-family: var(--font-mono);
-    font-size: var(--fs-micro);
-    letter-spacing: 0.18em;
-    color: rgba(245, 245, 245, 0.42);
-}
-
-@media (max-width: 400px) {
-    .sep {
-        display: none;
+    .entry:hover .title {
+        color: var(--ae-accent-ink);
     }
 }
 
-.rise {
-    animation: rise 0.5s var(--ease-out) both;
-    animation-delay: var(--d, 0s);
+/* Shiki inlines its theme background; the aequitas code block is the surface. */
+.prose pre.shiki {
+    background-color: transparent !important;
 }
 
-/* A short lift out of a soft blur: the blur blends the copy into the glass
-   instead of sliding a crisp block up from nothing. */
-@keyframes rise {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-        filter: blur(4px);
-    }
-}
-
-/* Reduced motion keeps the fade (it still explains that content arrived) but
-   drops the movement and the blur. */
-@keyframes rise-fade {
-    from {
-        opacity: 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
+/* One load-in: the profile, then the page, rise into place in sequence. */
+@media (prefers-reduced-motion: no-preference) {
     .rise {
-        animation: rise-fade 0.3s ease both;
-        animation-delay: 0s;
+        animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation-delay: calc(var(--i, 0) * 70ms);
     }
 
-    .mesh {
-        animation: none;
+    @keyframes rise {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
     }
 }

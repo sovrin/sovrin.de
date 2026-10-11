@@ -7,51 +7,64 @@ const {data: projects} = await useFetch<Project[]>('/api/projects', {
   default: () => [],
 })
 
-// Coarse "last touched" stamp — day granularity keeps SSR and client in sync.
+// Screenshots of deployed projects, app/assets/work/<repo>.jpg. A project with
+// one leads the section as a feature; the rest are rows. Resolved at build time,
+// so there is never a broken image for a repo without a shot.
+const shots = Object.fromEntries(
+  Object.entries(import.meta.glob<string>('~/assets/work/*.jpg', {eager: true, import: 'default'}))
+    .map(([path, src]) => [path.split('/').pop()!.replace(/\.jpg$/, ''), src]),
+)
+const featured = computed(() => projects.value.filter((p) => p.homepage && shots[p.name]))
+const rest = computed(() => projects.value.filter((p) => !featured.value.includes(p)))
+
+const plural = (n: number, unit: string) => `${n} ${unit}${n === 1 ? '' : 's'}`
+
+// Coarse "last touched" stamp; day granularity keeps SSR and client in sync.
 function relTime(iso: string): string {
   const then = Date.parse(iso)
   if (!then) return ''
   const days = Math.floor((Date.now() - then) / 86_400_000)
   if (days <= 0) return 'today'
-  if (days < 7) return `${days}d`
-  if (days < 30) return `${Math.floor(days / 7)}w`
-  if (days < 365) return `${Math.floor(days / 30)}mo`
-  return `${Math.floor(days / 365)}y`
-}
-
-// Display form of a deployed URL: bare host + path, no scheme or trailing slash.
-function bareUrl(url: string): string {
-  return url.replace(/^https?:\/\//i, '').replace(/\/$/, '')
+  if (days < 7) return plural(days, 'day')
+  if (days < 30) return plural(Math.floor(days / 7), 'week')
+  if (days < 365) return plural(Math.floor(days / 30), 'month')
+  return plural(Math.floor(days / 365), 'year')
 }
 </script>
 
 <template>
-  <section v-if="projects.length" class="projects" aria-label="Latest projects">
-    <Prompt class="head">ls ~/projects</Prompt>
+  <section v-if="projects.length" aria-labelledby="work">
+    <div class="sheet-head">
+      <h2 id="work">Work</h2>
+      <span>latest pushes on GitHub</span>
+    </div>
 
-    <ul class="list">
-      <li v-for="p in projects" :key="p.name" class="project">
-        <span class="row">
-          <a class="repo" :href="p.url" target="_blank" rel="noreferrer">
-            <span class="name">{{ p.name }}</span>
-            <span class="sr-only"> (opens in a new tab)</span>
-          </a>
-          <span class="leader" aria-hidden="true"/>
-          <span class="stats">
-            <span v-if="p.language" class="lang">{{ p.language }}</span>
-            <span v-if="p.stars" class="stars">★ {{ p.stars }}</span>
-            <span class="when">{{ relTime(p.pushedAt) }}</span>
-          </span>
+    <ul v-if="featured.length" class="showcase">
+      <li v-for="p in featured" :key="p.name" class="feature">
+        <a :href="p.homepage!" target="_blank" rel="noreferrer">
+          <img :src="shots[p.name]" :alt="`${p.name}, the live site`" width="1200" height="750" loading="lazy">
+          <strong>{{ p.name }}</strong>
+          <span class="sr-only"> (live site, opens in a new tab)</span>
+        </a>
+        <span v-if="p.description" class="desc">{{ p.description }}</span>
+        <span class="meta">
+          <a :href="p.url" target="_blank" rel="noreferrer">source<span class="sr-only"> on GitHub (opens in a new tab)</span></a>, {{ relTime(p.pushedAt) }}
         </span>
-        <span v-if="p.description || p.homepage" class="sub">
-          <span v-if="p.description" class="desc">{{ p.description }}</span>
+      </li>
+    </ul>
+
+    <ul class="entries" data-cols="2">
+      <li v-for="p in rest" :key="p.name" class="entry">
+        <a class="title" :href="p.url" target="_blank" rel="noreferrer">
+          {{ p.name }}<span class="sr-only"> (opens in a new tab)</span>
+        </a>
+        <span v-if="p.description" class="desc">{{ p.description }}</span>
+        <span class="meta">
           <a v-if="p.homepage" class="live" :href="p.homepage" target="_blank" rel="noreferrer">
-            <svg class="sigil" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-            </svg>{{ bareUrl(p.homepage) }}
-            <span class="sr-only"> (live site, opens in a new tab)</span>
+            live ↗<span class="sr-only"> {{ p.name }} site (opens in a new tab)</span>
           </a>
+          <span v-else-if="p.language">{{ p.language }}</span>
+          <span>{{ relTime(p.pushedAt) }}</span>
         </span>
       </li>
     </ul>
@@ -59,224 +72,86 @@ function bareUrl(url: string): string {
 </template>
 
 <style scoped>
-.projects {
-  margin-top: var(--space-md);
-}
-
-.head {
-  margin-bottom: var(--space-2xs);
-}
-
-.list {
-  list-style: none;
-  margin: 0;
+.showcase {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--ae-space-6) var(--ae-space-5);
+  margin: var(--ae-space-5) 0 var(--ae-space-6);
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2xs);
+  list-style: none;
 }
 
-/* The repo link is stretched over the whole item (::before), so the row stays
-   one click target while the live link can sit on top of it — links can't nest. */
-.project {
-  position: relative;
-  padding: var(--space-3xs) 0;
-  transform-origin: left center;
-  transition: transform var(--dur-press) var(--ease-out);
+.feature {
+  display: grid;
+  align-content: start;
+  gap: var(--ae-space-2);
 }
 
-/* Press feedback for the whole row — kept tiny, since the row is wide. */
-.project:active:not(:has(.live:active)) {
-  transform: scale(0.99);
+.feature > a {
+  display: grid;
+  gap: var(--ae-space-3);
+  color: var(--ae-text);
+  text-decoration: none;
 }
 
-.repo::before {
-  content: '';
-  position: absolute;
-  inset: 0;
+.feature img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top left;
+  border-radius: var(--ae-radius-m);
+  box-shadow: var(--ae-shadow-m);
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.row {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2xs);
+.feature strong {
+  font-size: var(--ae-text-xl);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  transition: color 160ms ease-out;
 }
 
-.name {
-  position: relative;
-  font-family: var(--font-sans);
-  font-size: var(--fs-body);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: rgba(245, 245, 245, 0.86);
-  transition: color var(--dur-out) ease;
-}
-
-/* Accent underline wipes in on hover and retracts (faster) toward the far end,
-   mirroring the link pills. */
-.name::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -0.2em;
-  height: 1px;
-  background: var(--mesh-color, rgba(245, 245, 245, 0.7));
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform var(--dur-out) var(--ease-out);
-}
-
-/* Real pointers only — a tap on touch would leave the row stuck "hovered". */
 @media (hover: hover) and (pointer: fine) {
-  .project:hover:not(:has(.live:hover)) .name {
-    color: #f5f5f5;
-    transition-duration: var(--dur-in);
+  .feature > a:hover img {
+    transform: scale(1.02);
   }
 
-  .project:hover:not(:has(.live:hover)) .name::after {
-    transform: scaleX(1);
-    transform-origin: left;
-    transition-duration: var(--dur-in);
+  .feature > a:hover strong {
+    color: var(--ae-accent-ink);
   }
-
-  .project:hover:not(:has(.live:hover)) .leader {
-    border-bottom-color: color-mix(in oklab, var(--mesh-color, #b5842a) 55%, transparent);
-    transition-duration: var(--dur-in);
-  }
-
-  .live:hover {
-    color: #f5f5f5;
-    transition-duration: var(--dur-in);
-  }
-}
-
-/* Keyboard focus lands instantly — tabbing never waits on an animation. */
-.project:has(.repo:focus-visible) .name {
-  color: #f5f5f5;
-  transition: none;
-}
-
-.project:has(.repo:focus-visible) .name::after {
-  transform: scaleX(1);
-  transition: none;
-}
-
-.project:has(.repo:focus-visible) .leader {
-  border-bottom-color: color-mix(in oklab, var(--mesh-color, #b5842a) 55%, transparent);
-  transition: none;
-}
-
-/* Ring the whole item rather than just the name the link wraps. */
-.repo:focus-visible {
-  outline: none;
-}
-
-.project:has(.repo:focus-visible) {
-  outline: 2px solid rgba(245, 245, 245, 0.5);
-  outline-offset: 3px;
-  border-radius: 2px;
-}
-
-/* Dotted index leader bridging name → metadata; warms to the accent on hover. */
-.leader {
-  flex: 1 1 auto;
-  align-self: baseline;
-  height: 0;
-  transform: translateY(-0.28em);
-  border-bottom: 1px dotted rgba(245, 245, 245, 0.16);
-  transition: border-color var(--dur-out) ease;
-}
-
-.stats {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2xs);
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
-  color: rgba(245, 245, 245, 0.42);
-}
-
-.stars {
-  color: var(--mesh-color, rgba(245, 245, 245, 0.5));
-}
-
-/* Right-most, dimmest column — a quiet "last touched" signal. */
-.when {
-  color: rgba(245, 245, 245, 0.3);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Description left, live link right under the stats column. space-between
-   (not margin-left: auto) so a link that wraps onto its own line sits left. */
-.sub {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--space-3xs) var(--space-sm);
-  margin-top: var(--space-3xs);
-}
-
-.desc {
-  flex: 0 1 auto;
-  max-width: 52ch;
-  font-size: var(--fs-pill);
-  line-height: 1.5;
-  color: rgba(245, 245, 245, 0.5);
-  text-wrap: pretty;
-}
-
-/* Deployed site — raised above the stretched repo link. */
-.live {
-  position: relative;
-  z-index: 1;
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3em;
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
-  color: rgba(245, 245, 245, 0.5);
-  transition: color var(--dur-out) ease, transform var(--dur-press) var(--ease-out);
-}
-
-.live:active {
-  transform: scale(0.97);
-}
-
-/* Chain glyph as inline SVG — Liberation Mono has none, and the Unicode ones
-   fall back to colour emoji. */
-.live .sigil {
-  flex: none;
-  width: 1.1em;
-  height: 1.1em;
-  fill: none;
-  stroke: var(--mesh-color, rgba(245, 245, 245, 0.5));
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.live:focus-visible {
-  color: #f5f5f5;
-  transition: none;
-  outline: 2px solid rgba(245, 245, 245, 0.5);
-  outline-offset: 3px;
-  border-radius: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .name::after {
+  .feature img {
     transition: none;
   }
+}
 
-  .project:active:not(:has(.live:active)),
-  .live:active {
-    transform: none;
-  }
+.feature .desc {
+  color: var(--ae-text-muted);
+}
+
+.feature .meta {
+  font-family: var(--ae-font-mono);
+  font-size: var(--ae-text-s);
+  color: var(--ae-text-muted);
+}
+
+.feature .meta a {
+  color: inherit;
+}
+
+/* Raised above the row's stretched repo link (links can't nest). */
+.live {
+  position: relative;
+  z-index: 1;
+  color: var(--ae-accent-ink);
+  text-decoration: none;
+}
+
+.live:hover {
+  text-decoration: underline;
 }
 </style>

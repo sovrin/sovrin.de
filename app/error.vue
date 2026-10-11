@@ -1,52 +1,23 @@
 <script setup lang="ts">
-// Error page (404 and friends), in the same language as the home page: the mesh
-// crystal + a terminal voice — you `cat` a path that isn't there.
-const props = defineProps<{error: {status?: number; statusText?: string; url?: string}}>()
+// Error page (404 and friends). It replaces app.vue, so it mounts its own Site.
+const props = defineProps<{error: {status?: number; statusText?: string}}>()
 const {portfolio} = useAppConfig()
-const {user} = portfolio
-const year = new Date().getFullYear()
-
-const route = useRoute()
 const code = computed(() => props.error?.status || 404)
-// Vue's {{ }} already HTML-escapes this (no XSS), but restrict it to a URL-ish
-// charset and cap the length so a crafted path can't render arbitrary text
-// (content-spoofing) or blow out the layout.
-const path = computed(() => {
-  const raw = route.fullPath || props.error?.url || '/'
-  return raw.replace(/[^\w\-./~%]/g, '').slice(0, 42) || '/'
-})
+const message = computed(() => code.value === 404 ? 'This page doesn’t exist.' : 'Something went wrong.')
 
-useHead({title: `${code.value} · ${user}`})
+useHead({title: `${code.value} · ${portfolio.name}`})
 </script>
 
 <template>
-  <Scene>
-    <div class="who rise" style="--d: 0s">
-      <Avatar :user="user" :size="40"/>
-      <Prompt class="status">cat {{ path }}</Prompt>
-    </div>
-
-    <h1 class="heading rise" style="--d: 0.08s">{{ code }}</h1>
-
-    <p class="bio rise" style="--d: 0.14s">
-      no such file or directory
-    </p>
-
-    <div class="meta rise" style="--d: 0.2s">
-      <LinkPill label="back home" sigil="←" href="/"/>
-      <span class="sep" aria-hidden="true"/>
-      <span class="year">{{ year }}</span>
-    </div>
-  </Scene>
+  <Site>
+    <section class="stack gap-5 rise" style="--i: 3">
+      <div class="sheet-head">
+        <h1>{{ code }}</h1>
+      </div>
+      <p class="lead">{{ message }}</p>
+      <p>
+        <NuxtLink class="btn" to="/">Back home</NuxtLink>
+      </p>
+    </section>
+  </Site>
 </template>
-
-<style scoped>
-/* The echoed path may be one long unbroken token. */
-.status {
-  word-break: break-all;
-}
-
-.meta {
-  margin-top: var(--space-md);
-}
-</style>
