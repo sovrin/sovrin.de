@@ -43,7 +43,12 @@
     text-underline-offset: 0.2em;
 }
 
-.prose a:hover,
+@media (hover: hover) and (pointer: fine) {
+    .prose a:hover {
+        text-decoration-thickness: 2px;
+    }
+}
+
 .prose a:focus-visible {
     text-decoration-thickness: 2px;
 }

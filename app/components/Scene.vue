@@ -45,7 +45,7 @@ onMounted(() => {
 // wider) and the shell's fill gutter is restarted from its locked value so all
 // three tween together.
 const panel = ref<HTMLElement | null>(null)
-const TWEEN_MS = 500 // matches the 0.5s transitions below
+const TWEEN_MS = 400 // matches the 0.4s transitions below
 
 interface Box {
   height: number
@@ -242,11 +242,13 @@ onMounted(() => {
 /* Between pages the shell's gutter and the panel's box tween together; the box
    is driven from script (see `release`) and only transitions while .resizing. */
 .shell {
-  transition: padding-top 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: padding-top 0.4s var(--ease-in-out);
 }
 
 .content.resizing {
-  transition: height 0.5s cubic-bezier(0.2, 0.7, 0.2, 1), width 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* An in-place morph, not an entrance: ease-in-out, so the box neither lurches
+     off nor slams into its new size. */
+  transition: height 0.4s var(--ease-in-out), width 0.4s var(--ease-in-out);
 }
 
 @media (prefers-reduced-motion: reduce) {
