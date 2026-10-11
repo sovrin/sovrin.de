@@ -43,6 +43,15 @@
     --fs-lead: 1.1875rem;  /* 19px — note sub-headings */
     --fs-title: clamp(1.618rem, 5vw, 2.618rem); /* note titles: φ¹–φ² rem */
     --fs-display: clamp(2.618rem, 8vw, 6rem);
+
+    /* Motion: one strong ease-out for anything entering or responding, one
+       ease-in-out for things that morph in place. Hover-ins run --dur-in; the
+       way back is always quicker (--dur-out), so leaving never lingers. */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --dur-press: 140ms;
+    --dur-in: 220ms;
+    --dur-out: 140ms;
 }
 
 html,
@@ -58,6 +67,7 @@ body {
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Faint floor tint so the pre-load void isn't flat black; the mesh's own shading
@@ -213,20 +223,32 @@ a {
 }
 
 .rise {
-    animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation: rise 0.5s var(--ease-out) both;
     animation-delay: var(--d, 0s);
 }
 
+/* A short lift out of a soft blur: the blur blends the copy into the glass
+   instead of sliding a crisp block up from nothing. */
 @keyframes rise {
     from {
         opacity: 0;
-        transform: translateY(14px);
+        transform: translateY(8px);
+        filter: blur(4px);
+    }
+}
+
+/* Reduced motion keeps the fade (it still explains that content arrived) but
+   drops the movement and the blur. */
+@keyframes rise-fade {
+    from {
+        opacity: 0;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .rise {
-        animation: none;
+        animation: rise-fade 0.3s ease both;
+        animation-delay: 0s;
     }
 
     .mesh {

@@ -54,6 +54,13 @@ const shown = computed(() => props.limit ? notes.value.slice(0, props.limit) : n
 .note {
   display: block;
   padding: var(--space-3xs) 0;
+  transform-origin: left center;
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+/* Press feedback for the whole row — kept tiny, since the row is wide. */
+.note:active {
+  transform: scale(0.99);
 }
 
 .row {
@@ -68,7 +75,7 @@ const shown = computed(() => props.limit ? notes.value.slice(0, props.limit) : n
   font-weight: 500;
   letter-spacing: -0.01em;
   color: rgba(245, 245, 245, 0.86);
-  transition: color 0.2s ease;
+  transition: color var(--dur-out) ease;
 }
 
 /* Accent underline wipes in on hover, as on the project names and link pills. */
@@ -81,18 +88,43 @@ const shown = computed(() => props.limit ? notes.value.slice(0, props.limit) : n
   height: 1px;
   background: var(--mesh-color, rgba(245, 245, 245, 0.7));
   transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.24s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform-origin: right;
+  transition: transform var(--dur-out) var(--ease-out);
 }
 
-.note:hover .title,
+/* Real pointers only — a tap on touch would leave the row stuck "hovered". */
+@media (hover: hover) and (pointer: fine) {
+  .note:hover .title {
+    color: #f5f5f5;
+    transition-duration: var(--dur-in);
+  }
+
+  .note:hover .title::after {
+    transform: scaleX(1);
+    transform-origin: left;
+    transition-duration: var(--dur-in);
+  }
+
+  .note:hover .leader {
+    border-bottom-color: color-mix(in oklab, var(--mesh-color, #b5842a) 55%, transparent);
+    transition-duration: var(--dur-in);
+  }
+}
+
+/* Keyboard focus lands instantly — tabbing never waits on an animation. */
 .note:focus-visible .title {
   color: #f5f5f5;
+  transition: none;
 }
 
-.note:hover .title::after,
 .note:focus-visible .title::after {
   transform: scaleX(1);
+  transition: none;
+}
+
+.note:focus-visible .leader {
+  border-bottom-color: color-mix(in oklab, var(--mesh-color, #b5842a) 55%, transparent);
+  transition: none;
 }
 
 .note:focus-visible {
@@ -107,12 +139,7 @@ const shown = computed(() => props.limit ? notes.value.slice(0, props.limit) : n
   height: 0;
   transform: translateY(-0.28em);
   border-bottom: 1px dotted rgba(245, 245, 245, 0.16);
-  transition: border-color 0.24s ease;
-}
-
-.note:hover .leader,
-.note:focus-visible .leader {
-  border-bottom-color: color-mix(in oklab, var(--mesh-color, #b5842a) 55%, transparent);
+  transition: border-color var(--dur-out) ease;
 }
 
 .when {
@@ -139,9 +166,12 @@ const shown = computed(() => props.limit ? notes.value.slice(0, props.limit) : n
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .title::after,
-  .leader {
+  .title::after {
     transition: none;
+  }
+
+  .note:active {
+    transform: none;
   }
 }
 </style>

@@ -81,6 +81,13 @@ function bareUrl(url: string): string {
 .project {
   position: relative;
   padding: var(--space-3xs) 0;
+  transform-origin: left center;
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+/* Press feedback for the whole row — kept tiny, since the row is wide. */
+.project:active:not(:has(.live:active)) {
+  transform: scale(0.99);
 }
 
 .repo::before {
@@ -102,10 +109,11 @@ function bareUrl(url: string): string {
   font-weight: 500;
   letter-spacing: -0.01em;
   color: rgba(245, 245, 245, 0.86);
-  transition: color 0.2s ease;
+  transition: color var(--dur-out) ease;
 }
 
-/* Accent underline wipes in on hover, mirroring the link pills. */
+/* Accent underline wipes in on hover and retracts (faster) toward the far end,
+   mirroring the link pills. */
 .name::after {
   content: '';
   position: absolute;
@@ -115,18 +123,48 @@ function bareUrl(url: string): string {
   height: 1px;
   background: var(--mesh-color, rgba(245, 245, 245, 0.7));
   transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.24s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform-origin: right;
+  transition: transform var(--dur-out) var(--ease-out);
 }
 
-.project:hover:not(:has(.live:hover)) .name,
+/* Real pointers only — a tap on touch would leave the row stuck "hovered". */
+@media (hover: hover) and (pointer: fine) {
+  .project:hover:not(:has(.live:hover)) .name {
+    color: #f5f5f5;
+    transition-duration: var(--dur-in);
+  }
+
+  .project:hover:not(:has(.live:hover)) .name::after {
+    transform: scaleX(1);
+    transform-origin: left;
+    transition-duration: var(--dur-in);
+  }
+
+  .project:hover:not(:has(.live:hover)) .leader {
+    border-bottom-color: color-mix(in oklab, var(--mesh-color, #b5842a) 55%, transparent);
+    transition-duration: var(--dur-in);
+  }
+
+  .live:hover {
+    color: #f5f5f5;
+    transition-duration: var(--dur-in);
+  }
+}
+
+/* Keyboard focus lands instantly — tabbing never waits on an animation. */
 .project:has(.repo:focus-visible) .name {
   color: #f5f5f5;
+  transition: none;
 }
 
-.project:hover:not(:has(.live:hover)) .name::after,
 .project:has(.repo:focus-visible) .name::after {
   transform: scaleX(1);
+  transition: none;
+}
+
+.project:has(.repo:focus-visible) .leader {
+  border-bottom-color: color-mix(in oklab, var(--mesh-color, #b5842a) 55%, transparent);
+  transition: none;
 }
 
 /* Ring the whole item rather than just the name the link wraps. */
@@ -147,12 +185,7 @@ function bareUrl(url: string): string {
   height: 0;
   transform: translateY(-0.28em);
   border-bottom: 1px dotted rgba(245, 245, 245, 0.16);
-  transition: border-color 0.24s ease;
-}
-
-.project:hover:not(:has(.live:hover)) .leader,
-.project:has(.repo:focus-visible) .leader {
-  border-bottom-color: color-mix(in oklab, var(--mesh-color, #b5842a) 55%, transparent);
+  transition: border-color var(--dur-out) ease;
 }
 
 .stats {
@@ -208,7 +241,11 @@ function bareUrl(url: string): string {
   font-size: var(--fs-micro);
   letter-spacing: 0.06em;
   color: rgba(245, 245, 245, 0.5);
-  transition: color 0.2s ease;
+  transition: color var(--dur-out) ease, transform var(--dur-press) var(--ease-out);
+}
+
+.live:active {
+  transform: scale(0.97);
 }
 
 /* Chain glyph as inline SVG — Liberation Mono has none, and the Unicode ones
@@ -224,22 +261,22 @@ function bareUrl(url: string): string {
   stroke-linejoin: round;
 }
 
-.live:hover,
 .live:focus-visible {
   color: #f5f5f5;
-}
-
-.live:focus-visible {
+  transition: none;
   outline: 2px solid rgba(245, 245, 245, 0.5);
   outline-offset: 3px;
   border-radius: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .live,
-  .name::after,
-  .leader {
+  .name::after {
     transition: none;
+  }
+
+  .project:active:not(:has(.live:active)),
+  .live:active {
+    transform: none;
   }
 }
 </style>
