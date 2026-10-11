@@ -13,6 +13,11 @@
     --wall-ink: oklch(0.17 0.02 var(--ae-hue));
 }
 
+/* Pages short enough to lose the scrollbar would otherwise widen the wall. */
+html {
+    scrollbar-gutter: stable;
+}
+
 body {
     background: var(--ae-bg);
 }

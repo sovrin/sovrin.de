@@ -3,7 +3,8 @@
 // yellow with the photo set into it as a duotone, the name and how to reach him;
 // beside it the dark main column the pages fill. Mounted once by app.vue and
 // again by error.vue, which replaces the shell. The name is the home page's h1;
-// elsewhere it links home and the page brings its own h1.
+// elsewhere it links home and the page brings its own h1. Only home shows the
+// photo: elsewhere the wall is just the name and how to reach him.
 import photo from '~/assets/me.jpg'
 
 const {portfolio} = useAppConfig()
@@ -15,7 +16,7 @@ const home = computed(() => useRoute().path === '/')
 <template>
   <div class="site">
     <aside class="wall" aria-label="About">
-      <img class="photo" :src="photo" :alt="name" width="1600" height="1344" fetchpriority="high">
+      <img v-if="home" class="photo" :src="photo" :alt="name" width="1600" height="1344" fetchpriority="high">
       <div class="intro">
         <h1 v-if="home" class="name rise">{{ name }}</h1>
         <p v-else class="name rise">
@@ -71,6 +72,7 @@ const home = computed(() => useRoute().path === '/')
 }
 
 .intro {
+  align-self: end;
   display: grid;
   gap: var(--ae-space-4);
   padding: var(--ae-space-5) var(--ae-space-6) var(--ae-space-6);
@@ -88,7 +90,13 @@ const home = computed(() => useRoute().path === '/')
 
 .name a {
   color: inherit;
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-thickness: 0.05em;
+  text-underline-offset: 0.12em;
+}
+
+.name a:hover {
+  text-decoration-thickness: 0.1em;
 }
 
 .about {
@@ -151,12 +159,17 @@ const home = computed(() => useRoute().path === '/')
 @media (max-width: 56rem) {
   .site {
     grid-template-columns: 1fr;
+    align-content: start;
   }
 
   .wall {
     position: static;
     block-size: auto;
-    grid-template-rows: 18rem auto;
+    grid-template-rows: none;
+  }
+
+  .photo {
+    block-size: 18rem;
   }
 
   .intro {

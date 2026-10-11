@@ -26,7 +26,10 @@ useHead({
   <section class="rise" style="--i: 3">
     <div class="sheet-head">
       <h1>Notes</h1>
-      <a href="/rss.xml">RSS</a>
+      <span class="cluster gap-4">
+        <NuxtLink to="/">← Home</NuxtLink>
+        <a href="/rss.xml">RSS</a>
+      </span>
     </div>
     <NoteList/>
   </section>
