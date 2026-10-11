@@ -11,7 +11,7 @@
 # Text (name / about / domain) is read from app/app.config.ts by default, the
 # photo from app/assets/me.jpg and the Geist faces from aequitas' dist (the same
 # AEQUITAS_DIST nuxt.config.ts uses), so the card cannot drift from the site.
-# Env: CHROME_BIN=/path/to/chrome to pick a browser.
+# Env: CHROME_BIN=/path/to/chrome to pick a browser (see scripts/chrome.sh).
 
 set -euo pipefail
 
@@ -43,32 +43,7 @@ done
   echo "aequitas fonts not found in ${AEQUITAS_DIST:-../aequitas/dist} — build aequitas or set AEQUITAS_DIST" >&2; exit 1; }
 
 # --- locate a Chromium ------------------------------------------------------
-# First match wins, so Playwright's headless shell beats a full Chrome: Chrome's
-# headless --screenshot counts window chrome in --window-size and leaves the
-# bottom ~90px of the card black.
-find_chrome() {
-  if [ -n "${CHROME_BIN:-}" ]; then echo "$CHROME_BIN"; return 0; fi
-  local c
-  for c in \
-    "$HOME/Library/Caches/ms-playwright"/chromium_headless_shell-*/chrome-headless-shell-*/chrome-headless-shell \
-    "$HOME/.cache/ms-playwright"/chromium_headless_shell-*/chrome-headless-shell-*/chrome-headless-shell \
-    "$HOME/Library/Caches/ms-playwright"/chromium-*/chrome-*/Chromium.app/Contents/MacOS/Chromium \
-    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-    "/Applications/Chromium.app/Contents/MacOS/Chromium" \
-    "$(command -v google-chrome || true)" \
-    "$(command -v chromium || true)"
-  do
-    if [ -n "$c" ] && [ -x "$c" ]; then echo "$c"; fi
-  done | head -n 1
-}
-
-CHROME="$(find_chrome || true)"
-if [ -z "$CHROME" ] || [ ! -x "$CHROME" ]; then
-  echo "No Chromium found. Install one:" >&2
-  echo "  npx playwright install chromium-headless-shell" >&2
-  echo "or set CHROME_BIN=/path/to/chrome." >&2
-  exit 1
-fi
+. "$ROOT/scripts/chrome.sh"
 
 # --- build the page to render ----------------------------------------------
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/og.XXXXXX")"
