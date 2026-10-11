@@ -1,14 +1,9 @@
 <script setup lang="ts">
-// The notes index: the dock in fill mode, listing every published note with the
-// footer pinned to the bottom of the column.
-definePageMeta({dock: 'fill'})
-
-const year = new Date().getFullYear()
 const {portfolio} = useAppConfig()
-const {user, url} = portfolio
+const {name, user, url} = portfolio
 
-const title = `notes · ${user}`
-const description = `notes by ${user}`
+const title = `Notes · ${name}`
+const description = `Notes by ${name}`
 const canonical = `${url}/notes`
 
 useHead({
@@ -28,39 +23,11 @@ useHead({
 </script>
 
 <template>
-  <div class="page">
-    <div class="who rise" style="--d: 0s">
-      <Avatar :user="user" :size="40"/>
-      <Prompt class="status">
-        <TypeWriter text="ls ~/notes"/>
-      </Prompt>
+  <section class="rise" style="--i: 3">
+    <div class="sheet-head">
+      <h1>Notes</h1>
+      <a href="/rss.xml">RSS</a>
     </div>
-
-    <h1 class="heading rise" style="--d: 0.08s">notes</h1>
-
-    <NoteList class="rise" style="--d: 0.14s"/>
-
-    <div class="meta rise" style="--d: 0.2s">
-      <LinkPill label="back home" sigil="←" href="/"/>
-      <span class="sep" aria-hidden="true"/>
-      <span class="year">{{ year }}</span>
-    </div>
-  </div>
+    <NoteList/>
+  </section>
 </template>
-
-<style scoped>
-.status {
-  --color-cursor: var(--mesh-color, rgba(245, 245, 245, 0.7));
-}
-
-.page {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.meta {
-  margin-top: auto;
-  padding-top: var(--space-md);
-}
-</style>

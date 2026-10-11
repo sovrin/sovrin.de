@@ -1,7 +1,15 @@
+import {dirname, resolve} from 'node:path'
+import {fileURLToPath} from 'node:url'
+
+// aequitas is consumed from its built dist/ in the sibling checkout (run `pnpm build` there
+// first); the Docker build copies the same directory to /aequitas/dist and points AEQUITAS_DIST at it.
+const root = dirname(fileURLToPath(import.meta.url))
+const aequitas = resolve(root, process.env.AEQUITAS_DIST ?? '../aequitas/dist') + '/'
+
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: {enabled: true},
-    css: ['~/assets/css/main.css', '~/assets/css/prose.css'],
+    css: [`${aequitas}aequitas.css`, '~/assets/css/main.css'],
     runtimeConfig: {
         // Optional PAT to lift GitHub's 60/h unauthenticated rate limit. Set via NUXT_GITHUB_TOKEN.
         githubToken: '',
@@ -15,13 +23,10 @@ export default defineNuxtConfig({
     },
     app: {
         head: {
-            htmlAttrs: {lang: 'en'},
-            meta: [{name: 'theme-color', content: '#060606'}],
-            // Self-hosted Liberation Mono — preload both weights so the terminal
-            // text paints without a fallback flash. No third-party font requests.
+            // Dark only. data-type="humanist" is aequitas' Geist preset.
+            htmlAttrs: {'lang': 'en', 'data-theme': 'dark', 'data-type': 'humanist'},
+            meta: [{name: 'theme-color', content: '#0f0e0c'}],
             link: [
-                {rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/LiberationMono-Regular.woff2', crossorigin: ''},
-                {rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/LiberationMono-Bold.woff2', crossorigin: ''},
                 {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
                 {rel: 'icon', type: 'image/x-icon', href: '/favicon.ico'},
                 {rel: 'apple-touch-icon', href: '/apple-touch-icon.png'},
@@ -29,4 +34,5 @@ export default defineNuxtConfig({
             ],
         },
     },
+    vite: {server: {fs: {allow: [root, resolve(aequitas, '..')]}}},
 })

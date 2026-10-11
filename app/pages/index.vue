@@ -1,27 +1,26 @@
 <script setup lang="ts">
-const year = new Date().getFullYear()
 const {portfolio} = useAppConfig()
-const {user, phrase, role, url, github, linkedin} = portfolio
+const {name, user, about, role, url, github, linkedin, stack} = portfolio
 
 const ogImage = `${url}/og.png`
 
 useHead({
-  title: user,
+  title: name,
   link: [{rel: 'canonical', href: url}],
   meta: [
-    {name: 'description', content: phrase},
+    {name: 'description', content: about},
     {property: 'og:type', content: 'website'},
     {property: 'og:site_name', content: user},
-    {property: 'og:title', content: user},
-    {property: 'og:description', content: phrase},
+    {property: 'og:title', content: name},
+    {property: 'og:description', content: about},
     {property: 'og:url', content: url},
     {property: 'og:image', content: ogImage},
     {property: 'og:image:width', content: '1200'},
     {property: 'og:image:height', content: '630'},
-    {property: 'og:image:alt', content: `${user} — ${phrase}`},
+    {property: 'og:image:alt', content: name},
     {name: 'twitter:card', content: 'summary_large_image'},
-    {name: 'twitter:title', content: user},
-    {name: 'twitter:description', content: phrase},
+    {name: 'twitter:title', content: name},
+    {name: 'twitter:description', content: about},
     {name: 'twitter:image', content: ogImage},
   ],
   script: [
@@ -30,9 +29,10 @@ useHead({
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'Person',
-        name: user,
+        name,
+        alternateName: user,
         jobTitle: role,
-        description: phrase,
+        description: about,
         url,
         sameAs: [github, linkedin],
       }),
@@ -42,46 +42,27 @@ useHead({
 </script>
 
 <template>
-  <div>
-    <div class="who rise" style="--d: 0s">
-      <Avatar :user="user" :size="40"/>
-      <Prompt class="status">
-        <TypeWriter text="whoami"/>
-      </Prompt>
-    </div>
-
-    <h1 class="heading rise" style="--d: 0.08s">{{ user }}</h1>
-
-    <p class="bio rise" style="--d: 0.14s">
-      {{ phrase }}
-    </p>
-
-    <Projects class="rise" style="--d: 0.2s"/>
-
-    <NoteList class="rise" style="--d: 0.26s" prompt="ls ~/notes" :limit="3"/>
-
-    <section class="contact rise" style="--d: 0.32s" aria-label="Contact and social links">
-      <Prompt class="contact-head">cat ~/contact</Prompt>
-      <div class="meta">
-        <SocialLinks/>
-        <span class="sep" aria-hidden="true"/>
-        <span class="year">{{ year }}</span>
+  <div class="sections">
+    <Projects class="rise" style="--i: 3"/>
+    <NoteList class="rise" style="--i: 4" :limit="3"/>
+    <section aria-labelledby="stack">
+      <div class="sheet-head">
+        <h2 id="stack">Stack</h2>
       </div>
+      <dl class="stack-list">
+        <template v-for="[label, value] in stack" :key="label">
+          <dt>{{ label }}</dt>
+          <dd>{{ value }}</dd>
+        </template>
+      </dl>
     </section>
   </div>
 </template>
 
 <style scoped>
-/* Caret glows in the avatar-sampled colour. */
-.status {
-  --color-cursor: var(--mesh-color, rgba(245, 245, 245, 0.7));
-}
-
-.contact {
-  margin-top: var(--space-md);
-}
-
-.contact-head {
-  margin-bottom: var(--space-2xs);
+.stack-list {
+  margin-block-start: var(--ae-space-4);
+  font-family: var(--ae-font-mono);
+  font-size: var(--ae-text-s);
 }
 </style>
