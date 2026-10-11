@@ -103,6 +103,9 @@ function relTime(iso: string): string {
   object-position: top left;
   border-radius: var(--ae-radius-m);
   box-shadow: var(--ae-shadow-m);
+  /* Dark screenshots on a dark page need an edge of their own. */
+  outline: 1px solid var(--ae-border);
+  outline-offset: -1px;
   transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 

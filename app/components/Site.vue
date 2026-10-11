@@ -128,9 +128,15 @@ const home = computed(() => useRoute().path === '/')
   color: var(--wall);
 }
 
-.reach a:focus-visible {
+/* aequitas' ring and selection are the accent, which is the wall itself. */
+.wall a:focus-visible {
   outline: 2px solid var(--wall-ink);
   outline-offset: 2px;
+}
+
+.wall ::selection {
+  background: var(--wall-ink);
+  color: var(--wall);
 }
 
 .content {
@@ -153,6 +159,11 @@ const home = computed(() => useRoute().path === '/')
 .foot a {
   color: inherit;
   text-decoration: none;
+  transition: color 160ms ease-out;
+}
+
+.foot a:hover {
+  color: var(--ae-text);
 }
 
 /* The wall becomes a band on top and the page scrolls as one column. */

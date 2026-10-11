@@ -3,8 +3,8 @@ import type {NoteMeta} from '~~/server/utils/notes'
 
 // Published notes, newest first, SSR-fetched from the live content endpoint the
 // way Projects is. `limit` marks the home page's compact variant: that many rows
-// under a "Notes" head with the way to the full index. Renders nothing while
-// there are no notes, so an empty blog leaves no trace on the page.
+// under a "Notes" head with the way to the full index. While there are no notes
+// the home block leaves no trace; the full index says so instead.
 const props = defineProps<{limit?: number}>()
 
 const {data: notes} = await useFetch<NoteMeta[]>('/api/notes', {key: 'notes', default: () => []})
@@ -26,5 +26,14 @@ const shown = computed(() => props.limit ? notes.value.slice(0, props.limit) : n
       </li>
     </ul>
   </section>
+  <p v-else-if="!props.limit" class="none">No notes yet.</p>
 </template>
+
+<style scoped>
+.none {
+  margin: 0;
+  padding-block: var(--ae-space-4);
+  color: var(--ae-text-muted);
+}
+</style>
 

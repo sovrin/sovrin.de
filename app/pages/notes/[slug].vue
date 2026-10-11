@@ -49,7 +49,7 @@ useHead({
       </span>
     </header>
     <h1 class="note-title">{{ note.title }}</h1>
-    <p v-if="note.tags.length" class="caption">{{ note.tags.join(', ') }}</p>
+    <p v-if="note.tags.length" class="tags">{{ note.tags.join(', ') }}</p>
     <div class="prose" v-html="note.html"/>
   </article>
 </template>
@@ -58,6 +58,13 @@ useHead({
 .note-title {
   margin-block: var(--ae-space-6) var(--ae-space-2);
   text-wrap: balance;
+}
+
+.tags {
+  margin: 0;
+  font-family: var(--ae-font-mono);
+  font-size: var(--ae-text-s);
+  color: var(--ae-text-muted);
 }
 
 .badge {
