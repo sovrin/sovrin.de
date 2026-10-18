@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const {portfolio} = useAppConfig()
-const {name, user, about, role, url, github, linkedin, stack} = portfolio
+const {name, user, about, role, github, linkedin} = portfolio
+const url = useRequestURL({xForwardedHost: true}).origin
 
 const ogImage = `${url}/og.png`
 
@@ -43,26 +44,7 @@ useHead({
 
 <template>
   <div class="sections">
-    <Projects class="rise" style="--i: 3"/>
-    <NoteList class="rise" style="--i: 4" :limit="3"/>
-    <section aria-labelledby="stack">
-      <div class="sheet-head">
-        <h2 id="stack">Stack</h2>
-      </div>
-      <dl class="stack-list">
-        <template v-for="[label, value] in stack" :key="label">
-          <dt>{{ label }}</dt>
-          <dd>{{ value }}</dd>
-        </template>
-      </dl>
-    </section>
+    <Projects/>
+    <NoteList :limit="3"/>
   </div>
 </template>
-
-<style scoped>
-.stack-list {
-  margin-block-start: var(--ae-space-4);
-  font-family: var(--ae-font-mono);
-  font-size: var(--ae-text-s);
-}
-</style>

@@ -4,7 +4,7 @@ const entry = (loc: string, lastmod?: string) =>
     `  <url>\n    <loc>${loc}</loc>\n${lastmod ? `    <lastmod>${lastmod}</lastmod>\n` : ''}  </url>`
 
 export default defineEventHandler(async (event) => {
-    const {url} = useSite()
+    const url = getRequestURL(event, {xForwardedHost: true}).origin
     const notes = await getNotes()
     const urls = [
         entry(`${url}/`),

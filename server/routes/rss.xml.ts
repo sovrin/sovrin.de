@@ -1,6 +1,7 @@
 // RSS 2.0 for the notes. Hand-built: the feed is a dozen lines, not a dependency.
 export default defineEventHandler(async (event) => {
-    const {user, url, phrase} = useSite()
+    const {user, phrase} = useSite()
+    const url = getRequestURL(event, {xForwardedHost: true}).origin
     const notes = await getNotes()
 
     const items = notes.map((n) => {

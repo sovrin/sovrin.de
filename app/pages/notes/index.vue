@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const {portfolio} = useAppConfig()
-const {name, user, url} = portfolio
+const {name, user} = portfolio
+const url = useRequestURL({xForwardedHost: true}).origin
 
 const title = `Notes · ${name}`
 const description = `Notes by ${name}`
@@ -23,13 +24,10 @@ useHead({
 </script>
 
 <template>
-  <section class="rise" style="--i: 3">
+  <section>
     <div class="sheet-head">
       <h1>Notes</h1>
-      <span class="cluster gap-4">
-        <NuxtLink to="/">← Home</NuxtLink>
-        <a href="/rss.xml">RSS</a>
-      </span>
+      <a href="/rss.xml">RSS</a>
     </div>
     <NoteList/>
   </section>

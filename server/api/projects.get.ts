@@ -31,7 +31,7 @@ export default defineCachedEventHandler(
 
         const headers: Record<string, string> = {
             accept: 'application/vnd.github+json',
-            'user-agent': 'sovrin.de',
+            'user-agent': githubUser,
             'x-github-api-version': '2022-11-28',
         }
         // Optional: raises the unauthenticated 60/h rate limit if NUXT_GITHUB_TOKEN is set.

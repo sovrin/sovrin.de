@@ -1,25 +1,36 @@
 /* Site-wide additions on top of aequitas. Unlayered, so they win over its
    @layer ae.* rules without !important. */
 :root {
-    /* The yellow wall in app/assets/me.jpg as an OKLCH hue (its most common
-       colour, 251 200 79). Re-measure it if the photo changes. */
+    /* The site's yellow as an OKLCH hue: measured from the yellow wall of an
+       earlier photo, and kept when the photo went monochrome. */
     --ae-hue: 86;
     --ae-neutral-hue: 86;
     /* aequitas puts the system mono first; the site wants its bundled Geist Mono. */
     --ae-font-mono: 'Geist Mono Variable', ui-monospace, monospace;
-    /* The wall: the photo's yellow at full strength, and the ink set on it. Both
-       follow the sampled hue. */
+    /* The wall: that yellow at full strength, and the ink set on it. Both
+       follow the hue. */
     --wall: oklch(0.83 0.165 var(--ae-hue));
     --wall-ink: oklch(0.17 0.02 var(--ae-hue));
+    /* The wall is the page's one loud element; aequitas' glow behind the dark
+       column would compete with it. */
+    --ae-aurora: none;
 }
 
-/* Pages short enough to lose the scrollbar would otherwise widen the wall. */
-html {
-    scrollbar-gutter: stable;
+/* Pages short enough to lose the scrollbar would otherwise widen the wall.
+   Two columns only: over the band it reserves a dark strip beside the yellow. */
+@media (min-width: 56rem) {
+    html {
+        scrollbar-gutter: stable;
+    }
 }
 
 body {
     background: var(--ae-bg);
+}
+
+/* Parked above the viewport, the skip link's shadow still falls onto the wall. */
+.skip-link:not(:focus-visible) {
+    box-shadow: none;
 }
 
 .sections {
@@ -51,6 +62,13 @@ body {
 
 .sheet-head a {
     color: inherit;
+    transition: color 160ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .sheet-head a:hover {
+        color: var(--ae-text);
+    }
 }
 
 /* A project or note row: title and metadata on one line, the description
@@ -131,8 +149,24 @@ body {
     background-color: transparent !important;
 }
 
-/* One load-in: the profile, then the page, rise into place in sequence. */
+/* One load-in: the profile, then the page, rise into place in sequence. On
+   navigation the pages crossfade (app.vue), timed with the wall (Site.vue). */
 @media (prefers-reduced-motion: no-preference) {
+    .page-enter-active {
+        transition: opacity var(--ae-duration-slow) var(--ae-ease);
+    }
+
+    /* The leaving page goes quicker, so two pages of text are hardly ever seen
+       on top of each other. */
+    .page-leave-active {
+        transition: opacity var(--ae-duration-fast) var(--ae-ease);
+    }
+
+    .page-enter-from,
+    .page-leave-to {
+        opacity: 0;
+    }
+
     .rise {
         animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
         animation-delay: calc(var(--i, 0) * 70ms);

@@ -3,7 +3,8 @@ import type {Note} from '~~/server/utils/notes'
 
 const route = useRoute()
 const {portfolio} = useAppConfig()
-const {name, user, url} = portfolio
+const {name, user} = portfolio
+const url = useRequestURL({xForwardedHost: true}).origin
 
 const slug = String(route.params.slug)
 const {data: note, error} = await useFetch<Note>(`/api/notes/${encodeURIComponent(slug)}`, {key: `note:${slug}`})
@@ -40,15 +41,13 @@ useHead({
 </script>
 
 <template>
-  <article v-if="note" class="rise" style="--i: 3">
-    <header class="sheet-head">
-      <NuxtLink to="/notes">← Notes</NuxtLink>
-      <span v-if="note.draft" class="badge" data-tone="warning">draft</span>
-    </header>
+  <article v-if="note">
     <h1 class="note-title">{{ note.title }}</h1>
     <p class="meta">
+      <NuxtLink to="/" rel="author">{{ name }}</NuxtLink>
       <time :datetime="note.date">{{ note.date }}</time>
       <span v-if="note.tags.length">{{ note.tags.join(', ') }}</span>
+      <span v-if="note.draft" class="badge" data-tone="warning">{{ note.slug.startsWith('_') ? 'unlisted' : 'draft' }}</span>
     </p>
     <div class="prose" v-html="note.html"/>
   </article>
@@ -57,7 +56,7 @@ useHead({
 <style scoped>
 /* Set in the wall name's voice, a step below it, so the two don't compete. */
 .note-title {
-  margin-block: var(--ae-space-6) var(--ae-space-3);
+  margin-block: 0 var(--ae-space-3);
   font-size: var(--ae-text-3xl);
   font-weight: 700;
   letter-spacing: -0.045em;
@@ -67,11 +66,25 @@ useHead({
 .meta {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--ae-space-1) var(--ae-space-4);
   margin: 0;
   font-family: var(--ae-font-mono);
   font-size: var(--ae-text-s);
   color: var(--ae-text-muted);
+}
+
+/* The byline: shared notes are where people arrive without the wall's name. */
+.meta a {
+  color: var(--ae-text);
+  text-decoration: none;
+  transition: color 160ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .meta a:hover {
+    color: var(--ae-accent-ink);
+  }
 }
 
 .prose {

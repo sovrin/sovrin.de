@@ -6,6 +6,8 @@ import type {Project} from '~~/server/api/projects.get'
 const {data: projects} = await useFetch<Project[]>('/api/projects', {
   default: () => [],
 })
+// GitHub down or rate-limited with nothing cached: the section still points at the work.
+const {github} = useAppConfig().portfolio
 
 // Screenshots of deployed projects, app/assets/work/<repo>.jpg. A project with
 // one leads the section as a feature; the rest are an index, one line each. Resolved at build time,
@@ -33,28 +35,32 @@ function relTime(iso: string): string {
 </script>
 
 <template>
-  <section v-if="projects.length" class="work" aria-labelledby="work">
+  <section class="work" aria-labelledby="work">
     <div class="sheet-head">
       <h2 id="work">Work</h2>
       <span>latest pushes on GitHub</span>
     </div>
 
+    <p v-if="!projects.length" class="none">
+      The list didn’t load just now. <a :href="github" target="_blank" rel="noreferrer">Everything is on GitHub</a>.
+    </p>
+
     <ul v-if="featured.length" class="showcase" data-variant="plain">
       <li v-for="p in featured" :key="p.name" class="feature">
         <a :href="p.homepage!" target="_blank" rel="noreferrer">
-          <img :src="shots[p.name]" :alt="`${p.name}, the live site`" width="1200" height="750">
+          <img :src="shots[p.name]" alt="" width="1200" height="750">
           <strong>{{ p.name }}</strong>
           <span class="sr-only"> (live site, opens in a new tab)</span>
         </a>
         <span v-if="p.description" class="desc">{{ p.description }}</span>
         <span class="meta">
           <a :href="p.url" target="_blank" rel="noreferrer">source<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
-          <span>{{ relTime(p.pushedAt) }}</span>
+          <time :datetime="p.pushedAt">{{ relTime(p.pushedAt) }}</time>
         </span>
       </li>
     </ul>
 
-    <ul class="entries index" data-variant="plain">
+    <ul v-if="rest.length" class="entries index" data-variant="plain">
       <li v-for="p in rest" :key="p.name" class="entry">
         <a class="title" :href="p.url" target="_blank" rel="noreferrer">
           {{ p.name }}<span class="sr-only"> (opens in a new tab)</span>
@@ -62,9 +68,9 @@ function relTime(iso: string): string {
         <span v-if="p.description" class="desc">{{ p.description }}</span>
         <span class="meta">
           <a v-if="p.homepage" class="live" :href="p.homepage" target="_blank" rel="noreferrer">
-            live ↗<span class="sr-only"> {{ p.name }} site (opens in a new tab)</span>
+            live<span aria-hidden="true"> ↗</span><span class="sr-only"> {{ p.name }} site (opens in a new tab)</span>
           </a>
-          <span>{{ relTime(p.pushedAt) }}</span>
+          <time :datetime="p.pushedAt">{{ relTime(p.pushedAt) }}</time>
         </span>
       </li>
     </ul>
@@ -104,7 +110,6 @@ function relTime(iso: string): string {
   /* Dark screenshots on a dark page need an edge of their own. */
   outline: 1px solid var(--ae-border);
   outline-offset: -1px;
-  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .feature strong {
@@ -115,23 +120,14 @@ function relTime(iso: string): string {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .feature > a:hover img {
-    transform: scale(1.02);
-  }
-
   .feature > a:hover strong {
     color: var(--ae-accent-ink);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .feature img {
-    transition: none;
-  }
-}
-
 .feature .desc {
   color: var(--ae-text-muted);
+  text-wrap: pretty;
 }
 
 .feature .meta {
@@ -198,15 +194,25 @@ function relTime(iso: string): string {
   }
 }
 
-/* Raised above the row's stretched repo link (links can't nest). */
+/* Raised above the row's stretched repo link (links can't nest), and padded
+   out so a thumb that lands near it doesn't open the repo instead. */
 .live {
   position: relative;
   z-index: 1;
+  padding: var(--ae-space-3) var(--ae-space-2);
+  margin: calc(-1 * var(--ae-space-3)) calc(-1 * var(--ae-space-2));
   color: var(--ae-accent-ink);
   text-decoration: none;
 }
 
-.live:hover {
-  text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+  .live:hover {
+    text-decoration: underline;
+  }
+}
+
+.none {
+  margin: var(--ae-space-5) 0 0;
+  color: var(--ae-text-muted);
 }
 </style>

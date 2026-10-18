@@ -86,7 +86,6 @@ if (USE_CONFIG === '1') {
   }
   set('name', field('name'))
   set('about', field('about'))
-  set('domain', field('url')?.replace(/^https?:\/\//, '').replace(/\/$/, ''))
 }
 
 writeFileSync(PAGE, html)

@@ -12,9 +12,9 @@ const shown = computed(() => props.limit ? notes.value.slice(0, props.limit) : n
 </script>
 
 <template>
-  <section v-if="shown.length" aria-label="Notes">
+  <section v-if="shown.length" :aria-labelledby="props.limit ? 'notes' : undefined">
     <div v-if="props.limit" class="sheet-head">
-      <h2>Notes</h2>
+      <h2 id="notes">Notes</h2>
       <NuxtLink to="/notes">all notes →</NuxtLink>
     </div>
 

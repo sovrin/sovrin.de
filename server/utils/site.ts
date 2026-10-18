@@ -2,7 +2,6 @@
 // XML routes get a typed view of it here, once.
 export interface Site {
     user: string
-    url: string
     phrase: string
 }
 
