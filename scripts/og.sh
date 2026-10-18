@@ -8,7 +8,7 @@
 #   scripts/og.sh --no-config      # keep the template's own text
 #   scripts/og.sh --keep-html      # leave the rendered HTML around for debugging
 #
-# Text (name / about / domain) is read from app/app.config.ts by default, the
+# Text (name / about) is read from app/app.config.ts by default, the
 # photo from app/assets/me.jpg and the Geist faces from aequitas' dist (the same
 # AEQUITAS_DIST nuxt.config.ts uses), so the card cannot drift from the site.
 # Env: CHROME_BIN=/path/to/chrome to pick a browser (see scripts/chrome.sh).
