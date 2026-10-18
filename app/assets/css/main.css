@@ -53,32 +53,18 @@ body {
     color: inherit;
 }
 
-/* A project or note row: title over description, metadata on the end. The
-   title link is stretched over the row (::before), so the row is one target. */
+/* A project or note row: title and metadata on one line, the description
+   under both at full width. The title link is stretched over the row
+   (::before), so the row is one target. */
 .entries {
     margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.entries[data-cols='2'] {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: var(--ae-space-6);
-}
-
-@media (max-width: 64rem) {
-    .entries[data-cols='2'] {
-        grid-template-columns: 1fr;
-    }
 }
 
 .entry {
     position: relative;
     display: grid;
     grid-template-columns: 1fr auto;
-    /* Any height the metadata adds goes under the description, not between. */
-    grid-template-rows: auto 1fr;
+    align-content: start;
     gap: var(--ae-space-1) var(--ae-space-5);
     margin-inline: calc(-1 * var(--ae-space-3));
     padding: var(--ae-space-4) var(--ae-space-3);
@@ -112,18 +98,18 @@ body {
 }
 
 .entry .desc {
-    grid-column: 1;
+    grid-column: 1 / -1;
     color: var(--ae-text-muted);
     text-wrap: pretty;
 }
 
 .entry .meta {
     grid-column: 2;
-    grid-row: 1 / 3;
+    grid-row: 1;
     align-self: start;
     padding-block-start: 0.35em;
-    display: grid;
-    justify-items: end;
+    display: flex;
+    gap: var(--ae-space-3);
     font-family: var(--ae-font-mono);
     font-size: var(--ae-text-s);
     color: var(--ae-text-muted);

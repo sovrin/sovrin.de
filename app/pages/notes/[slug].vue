@@ -43,32 +43,35 @@ useHead({
   <article v-if="note" class="rise" style="--i: 3">
     <header class="sheet-head">
       <NuxtLink to="/notes">← Notes</NuxtLink>
-      <span>
-        <time :datetime="note.date">{{ note.date }}</time>
-        <span v-if="note.draft" class="badge" data-tone="warning">draft</span>
-      </span>
+      <span v-if="note.draft" class="badge" data-tone="warning">draft</span>
     </header>
     <h1 class="note-title">{{ note.title }}</h1>
-    <p v-if="note.tags.length" class="tags">{{ note.tags.join(', ') }}</p>
+    <p class="meta">
+      <time :datetime="note.date">{{ note.date }}</time>
+      <span v-if="note.tags.length">{{ note.tags.join(', ') }}</span>
+    </p>
     <div class="prose" v-html="note.html"/>
   </article>
 </template>
 
 <style scoped>
+/* Set in the wall name's voice, a step below it, so the two don't compete. */
 .note-title {
-  margin-block: var(--ae-space-6) var(--ae-space-2);
+  margin-block: var(--ae-space-6) var(--ae-space-3);
+  font-size: var(--ae-text-3xl);
+  font-weight: 700;
+  letter-spacing: -0.045em;
   text-wrap: balance;
 }
 
-.tags {
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ae-space-1) var(--ae-space-4);
   margin: 0;
   font-family: var(--ae-font-mono);
   font-size: var(--ae-text-s);
   color: var(--ae-text-muted);
-}
-
-.badge {
-  margin-inline-start: var(--ae-space-3);
 }
 
 .prose {

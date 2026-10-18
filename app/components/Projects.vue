@@ -8,7 +8,7 @@ const {data: projects} = await useFetch<Project[]>('/api/projects', {
 })
 
 // Screenshots of deployed projects, app/assets/work/<repo>.jpg. A project with
-// one leads the section as a feature; the rest are rows. Resolved at build time,
+// one leads the section as a feature; the rest are an index, one line each. Resolved at build time,
 // so there is never a broken image for a repo without a shot.
 const shots = Object.fromEntries(
   Object.entries(import.meta.glob<string>('~/assets/work/*.jpg', {eager: true, import: 'default'}))
@@ -33,27 +33,28 @@ function relTime(iso: string): string {
 </script>
 
 <template>
-  <section v-if="projects.length" aria-labelledby="work">
+  <section v-if="projects.length" class="work" aria-labelledby="work">
     <div class="sheet-head">
       <h2 id="work">Work</h2>
       <span>latest pushes on GitHub</span>
     </div>
 
-    <ul v-if="featured.length" class="showcase">
+    <ul v-if="featured.length" class="showcase" data-variant="plain">
       <li v-for="p in featured" :key="p.name" class="feature">
         <a :href="p.homepage!" target="_blank" rel="noreferrer">
-          <img :src="shots[p.name]" :alt="`${p.name}, the live site`" width="1200" height="750" loading="lazy">
+          <img :src="shots[p.name]" :alt="`${p.name}, the live site`" width="1200" height="750">
           <strong>{{ p.name }}</strong>
           <span class="sr-only"> (live site, opens in a new tab)</span>
         </a>
         <span v-if="p.description" class="desc">{{ p.description }}</span>
         <span class="meta">
-          <a :href="p.url" target="_blank" rel="noreferrer">source<span class="sr-only"> on GitHub (opens in a new tab)</span></a>, {{ relTime(p.pushedAt) }}
+          <a :href="p.url" target="_blank" rel="noreferrer">source<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
+          <span>{{ relTime(p.pushedAt) }}</span>
         </span>
       </li>
     </ul>
 
-    <ul class="entries" data-cols="2">
+    <ul class="entries index" data-variant="plain">
       <li v-for="p in rest" :key="p.name" class="entry">
         <a class="title" :href="p.url" target="_blank" rel="noreferrer">
           {{ p.name }}<span class="sr-only"> (opens in a new tab)</span>
@@ -63,7 +64,6 @@ function relTime(iso: string): string {
           <a v-if="p.homepage" class="live" :href="p.homepage" target="_blank" rel="noreferrer">
             live ↗<span class="sr-only"> {{ p.name }} site (opens in a new tab)</span>
           </a>
-          <span v-else-if="p.language">{{ p.language }}</span>
           <span>{{ relTime(p.pushedAt) }}</span>
         </span>
       </li>
@@ -75,10 +75,8 @@ function relTime(iso: string): string {
 .showcase {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: var(--ae-space-6) var(--ae-space-5);
+  gap: var(--ae-space-6);
   margin: var(--ae-space-5) 0 var(--ae-space-6);
-  padding: 0;
-  list-style: none;
 }
 
 .feature {
@@ -137,6 +135,8 @@ function relTime(iso: string): string {
 }
 
 .feature .meta {
+  display: flex;
+  gap: var(--ae-space-3);
   font-family: var(--ae-font-mono);
   font-size: var(--ae-text-s);
   color: var(--ae-text-muted);
@@ -144,6 +144,58 @@ function relTime(iso: string): string {
 
 .feature .meta a {
   color: inherit;
+}
+
+/* Name, description and age as aligned columns, read straight down; the names
+   share one column (subgrid) so the descriptions start on one edge. */
+.work {
+  container-type: inline-size;
+}
+
+.index {
+  display: grid;
+  grid-template-columns: fit-content(14rem) 1fr auto;
+  column-gap: var(--ae-space-5);
+  padding-block-start: var(--ae-space-3);
+  border-block-start: 1px solid var(--ae-border);
+}
+
+.index .entry {
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+  padding-block: var(--ae-space-3);
+}
+
+.index .title {
+  font-size: var(--ae-text-base);
+}
+
+.index .desc {
+  grid-column: 2;
+}
+
+.index .meta {
+  grid-column: 3;
+  align-self: baseline;
+  justify-self: end;
+  padding: 0;
+}
+
+/* Too narrow for three columns: the description drops under name and age. */
+@container (max-width: 32rem) {
+  .index {
+    grid-template-columns: 1fr auto;
+  }
+
+  .index .desc {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .index .meta {
+    grid-column: 2;
+  }
 }
 
 /* Raised above the row's stretched repo link (links can't nest). */

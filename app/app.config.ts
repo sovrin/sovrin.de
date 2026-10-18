@@ -8,7 +8,7 @@ export default defineAppConfig({
         url: 'https://sovrin.de',
         github: 'https://github.com/sovrin',
         linkedin: 'https://www.linkedin.com/in/oleg-kamlowski-2166a224b/',
-        email: 'contact@sovrin.de',
+        mailbox: 'hello',
         stack: [
             ['Languages', 'TypeScript, JavaScript, CSS'],
             ['Frontend', 'Vue, Nuxt, React'],

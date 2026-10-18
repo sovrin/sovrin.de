@@ -3,18 +3,21 @@
 // yellow with the photo set into it as a duotone, the name and how to reach him;
 // beside it the dark main column the pages fill. Mounted once by app.vue and
 // again by error.vue, which replaces the shell. The name is the home page's h1;
-// elsewhere it links home and the page brings its own h1. Only home shows the
-// photo: elsewhere the wall is just the name and how to reach him.
+// elsewhere it links home and the page brings its own h1. Only home introduces
+// him in full: elsewhere the wall narrows to a rail with just the name, so a
+// reader gets the width.
 import photo from '~/assets/me.jpg'
 
 const {portfolio} = useAppConfig()
-const {name, about, email, github, linkedin} = portfolio
+const {name, about, mailbox, github, linkedin} = portfolio
+// The address follows whichever domain serves the site, so one build works on all of them.
+const email = `${mailbox}@${useRequestURL({xForwardedHost: true}).hostname.replace(/^www\./, '')}`
 const year = new Date().getFullYear()
 const home = computed(() => useRoute().path === '/')
 </script>
 
 <template>
-  <div class="site">
+  <div class="site" :class="{rail: !home}">
     <aside class="wall" aria-label="About">
       <img v-if="home" class="photo" :src="photo" :alt="name" width="1600" height="1344" fetchpriority="high">
       <div class="intro">
@@ -22,8 +25,8 @@ const home = computed(() => useRoute().path === '/')
         <p v-else class="name rise">
           <NuxtLink to="/">{{ name }}</NuxtLink>
         </p>
-        <p class="about rise" style="--i: 1">{{ about }}</p>
-        <div class="reach rise" style="--i: 2">
+        <p v-if="home" class="about rise" style="--i: 1">{{ about }}</p>
+        <div v-if="home" class="reach rise" style="--i: 2">
           <a :href="`mailto:${email}`">Email me</a>
           <a :href="github" target="_blank" rel="noreferrer">GitHub</a>
           <a :href="linkedin" target="_blank" rel="noreferrer">LinkedIn</a>
@@ -137,6 +140,24 @@ const home = computed(() => useRoute().path === '/')
 .wall ::selection {
   background: var(--wall-ink);
   color: var(--wall);
+}
+
+.rail {
+  grid-template-columns: 14rem 1fr;
+}
+
+.rail .intro {
+  padding: var(--ae-space-5);
+}
+
+.rail .name {
+  font-size: var(--ae-text-2xl);
+}
+
+/* Off home every page is reading: one column at the prose measure, footer
+   included. Set here, not per child, since the measure is in ch of each font. */
+.rail .content {
+  max-inline-size: calc(var(--ae-measure) + 2 * var(--ae-space-7));
 }
 
 .content {

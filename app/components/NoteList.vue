@@ -18,7 +18,7 @@ const shown = computed(() => props.limit ? notes.value.slice(0, props.limit) : n
       <NuxtLink to="/notes">all notes →</NuxtLink>
     </div>
 
-    <ul class="entries">
+    <ul class="entries" data-variant="plain">
       <li v-for="n in shown" :key="n.slug" class="entry">
         <NuxtLink class="title" :to="`/notes/${n.slug}`">{{ n.title }}</NuxtLink>
         <span v-if="n.description" class="desc">{{ n.description }}</span>
