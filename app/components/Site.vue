@@ -10,7 +10,7 @@ import photo from '~/assets/me.jpg'
 const {portfolio} = useAppConfig()
 const {name, about, mailbox, github, linkedin} = portfolio
 // The address follows whichever domain serves the site, so one build works on all of them.
-const email = `${mailbox}@${useRequestURL({xForwardedHost: true}).hostname.replace(/^www\./, '')}`
+const email = `${mailbox}@${useRequestURL({xForwardedHost: true}).hostname.split('.').slice(-2).join('.')}`
 const year = new Date().getFullYear()
 const route = useRoute()
 const home = computed(() => route.path === '/')
