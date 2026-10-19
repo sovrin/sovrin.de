@@ -60,6 +60,7 @@ watch(home, () => {
       </div>
       <footer class="foot">
         <a :href="`mailto:${email}`">{{ email }}</a>
+        <Strings/>
         <span>{{ year }}</span>
       </footer>
     </main>
@@ -368,6 +369,8 @@ watch(home, () => {
 .foot {
   display: flex;
   justify-content: space-between;
+  align-items: start;
+  gap: var(--ae-space-5);
   padding-block-start: var(--ae-space-5);
   border-block-start: 1px solid var(--ae-border);
   font-family: var(--ae-font-mono);
