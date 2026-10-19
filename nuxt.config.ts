@@ -4,12 +4,14 @@ import {fileURLToPath} from 'node:url'
 // aequitas is consumed from its built dist/ in the sibling checkout (run `pnpm build` there
 // first); the Docker build copies the same directory to /aequitas/dist and points AEQUITAS_DIST at it.
 const root = dirname(fileURLToPath(import.meta.url))
-const aequitas = resolve(root, process.env.AEQUITAS_DIST ?? '../aequitas/dist') + '/'
+const aequitas = resolve(root, process.env.AEQUITAS_DIST ?? '../aequitas/dist')
 
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: {enabled: true},
-    css: [`${aequitas}aequitas.css`, '~/assets/css/main.css'],
+    css: [`${aequitas}/aequitas.css`, '~/assets/css/main.css'],
+    // For its asset URLs, such as the fonts Site.vue preloads.
+    alias: {aequitas},
     runtimeConfig: {
         // Optional PAT to lift GitHub's 60/h unauthenticated rate limit. Set via NUXT_GITHUB_TOKEN.
         githubToken: '',

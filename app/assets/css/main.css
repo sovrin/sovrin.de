@@ -149,7 +149,8 @@ body {
     background-color: transparent !important;
 }
 
-/* One load-in: the profile, then the page, rise into place in sequence. On
+/* One load-in: the profile rises into place line by line, and the page with its
+   first line rather than after the last, so the column never sits empty. On
    navigation the pages crossfade (app.vue), timed with the wall (Site.vue). */
 @media (prefers-reduced-motion: no-preference) {
     .page-enter-active {

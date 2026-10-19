@@ -6,6 +6,14 @@
 // Only home introduces him: elsewhere the wall narrows to a rail holding a way
 // back, so a reader gets the width, and the page brings its own h1.
 import photo from '~/assets/me.jpg'
+import geist from 'aequitas/fonts/geist-latin-wght-normal.woff2?url'
+import geistMono from 'aequitas/fonts/geist-mono-latin-wght-normal.woff2?url'
+
+// aequitas only uses its fonts if they're in by first paint (font-display:
+// optional), and the stylesheet alone finds them too late: fetch them with it.
+useHead({
+  link: [geist, geistMono].map((href) => ({rel: 'preload', as: 'font', type: 'font/woff2', href, crossorigin: ''})),
+})
 
 const {portfolio} = useAppConfig()
 const {name, about, mailbox, github, linkedin} = portfolio
@@ -54,7 +62,7 @@ watch(home, () => {
       </Transition>
     </header>
 
-    <main id="content" class="content rise" :style="{'--i': home ? 3 : 0}">
+    <main id="content" class="content rise">
       <div class="pages">
         <slot/>
       </div>
