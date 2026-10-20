@@ -14,5 +14,7 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 3000
+      # From .env next to this file; unauthenticated, the server's IP shares GitHub's 60/h limit.
+      NUXT_GITHUB_TOKEN: ${NUXT_GITHUB_TOKEN:-}
     volumes:
       - ./content:/app/content:ro
