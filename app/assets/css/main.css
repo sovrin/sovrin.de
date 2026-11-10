@@ -7,45 +7,65 @@
     --ae-neutral-hue: 86;
     /* aequitas puts the system mono first; the site wants its bundled Geist Mono. */
     --ae-font-mono: 'Geist Mono Variable', ui-monospace, monospace;
-    /* The wall: that yellow at full strength, and the ink set on it. Both
+    /* The yellow at full strength (the "wall"), and the ink set on it. Both
        follow the hue. */
     --wall: oklch(0.83 0.165 var(--ae-hue));
     --wall-ink: oklch(0.17 0.02 var(--ae-hue));
-    /* The wall is the page's one loud element; aequitas' glow behind the dark
-       column would compete with it. */
+    /* The yellow is the page's one loud element; aequitas' glow behind the
+       dark would compete with it. */
     --ae-aurora: none;
-}
-
-/* Pages short enough to lose the scrollbar would otherwise widen the wall.
-   Two columns only: over the band it reserves a dark strip beside the yellow. */
-@media (min-width: 56rem) {
-    html {
-        scrollbar-gutter: stable;
-    }
+    /* The page's width and its side margin, shared by the nav, the column and
+       the yellow footer, so their contents line up. */
+    --page: 90rem;
+    --gutter: clamp(1.25rem, 4.4vw, 4rem);
 }
 
 body {
     background: var(--ae-bg);
 }
 
-/* Parked above the viewport, the skip link's shadow still falls onto the wall. */
+/* Parked above the viewport, the skip link's shadow still falls onto the page. */
 .skip-link:not(:focus-visible) {
     box-shadow: none;
 }
 
-.sections {
-    display: grid;
-    gap: var(--ae-space-8);
+/* A page's column: the page width, centred, off the gutter. */
+.sheet {
+    box-sizing: border-box;
+    inline-size: 100%;
+    max-inline-size: var(--page);
+    margin-inline: auto;
+    padding: var(--ae-space-8) var(--gutter) 0;
 }
 
-/* Section head: a small title and a muted aside over one hairline. */
+.sections {
+    display: grid;
+    gap: calc(var(--ae-space-8) * 1.618);
+}
+
+/* The way up a level, over a page's title: home from the notes, the notes
+   from a note. */
+.back {
+    font-family: var(--ae-font-mono);
+    font-size: var(--ae-text-s);
+    color: var(--ae-text-muted);
+    text-decoration: none;
+    transition: color 160ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .back:hover {
+        color: var(--wall);
+    }
+}
+
+/* Section head: the title large, in the name's voice, and a muted aside. */
 .sheet-head {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: baseline;
-    gap: var(--ae-space-4);
-    padding-block-end: var(--ae-space-3);
-    border-block-end: 1px solid var(--ae-border);
+    gap: var(--ae-space-2) var(--ae-space-4);
     font-family: var(--ae-font-mono);
     font-size: var(--ae-text-s);
     color: var(--ae-text-muted);
@@ -54,9 +74,10 @@ body {
 .sheet-head :is(h1, h2) {
     margin: 0;
     font-family: var(--ae-font-sans);
-    font-size: var(--ae-text-base);
-    font-weight: 500;
-    letter-spacing: 0;
+    font-size: clamp(2.75rem, 6vw, 5.5rem);
+    font-weight: 650;
+    letter-spacing: -0.05em;
+    line-height: 0.9;
     color: var(--ae-text);
 }
 
@@ -71,87 +92,26 @@ body {
     }
 }
 
-/* A project or note row: title and metadata on one line, the description
-   under both at full width. The title link is stretched over the row
-   (::before), so the row is one target. */
-.entries {
-    margin: 0;
-}
-
-.entry {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-content: start;
-    gap: var(--ae-space-1) var(--ae-space-5);
-    margin-inline: calc(-1 * var(--ae-space-3));
-    padding: var(--ae-space-4) var(--ae-space-3);
-    border-radius: var(--ae-radius-m);
-    transition: background-color 160ms ease-out;
-}
-
-.entry .title {
-    font-size: var(--ae-text-l);
-    font-weight: 500;
-    letter-spacing: -0.015em;
-    color: var(--ae-text);
-    text-decoration: none;
-    transition: color 160ms ease-out;
-}
-
-.entry .title::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-}
-
-.entry .title:focus-visible {
-    outline: none;
-}
-
-.entry .title:focus-visible::before {
-    outline: 2px solid var(--ae-accent);
-    outline-offset: 2px;
-}
-
-.entry .desc {
-    grid-column: 1 / -1;
-    color: var(--ae-text-muted);
-    text-wrap: pretty;
-}
-
-.entry .meta {
-    grid-column: 2;
-    grid-row: 1;
-    align-self: start;
-    padding-block-start: 0.35em;
-    display: flex;
-    gap: var(--ae-space-3);
-    font-family: var(--ae-font-mono);
-    font-size: var(--ae-text-s);
-    color: var(--ae-text-muted);
-}
-
-/* Real pointers only: a tap on touch would leave the row stuck 'hovered'. */
-@media (hover: hover) and (pointer: fine) {
-    .entry:hover {
-        background: var(--ae-fill);
-    }
-
-    .entry:hover .title {
-        color: var(--ae-accent-ink);
-    }
-}
-
 /* Shiki inlines its theme background; the aequitas code block is the surface. */
 .prose pre.shiki {
     background-color: transparent !important;
 }
 
-/* One load-in: the profile rises into place line by line, and the page with its
-   first line rather than after the last, so the column never sits empty. On
-   navigation the pages crossfade (app.vue), timed with the wall (Site.vue). */
+/* One load-in: the whole frame, mark to footer, fades in as one picture,
+   without moving; the fonts are in by first paint (Site.vue), so it arrives
+   set, and home's hero comes into focus inside it (index.vue). Site mounts
+   once per load, so it's the first load only; on navigation the pages
+   crossfade (app.vue). A fade is no motion, so it stays with reduced motion. */
+.arrive {
+    animation: arrive 500ms var(--ae-ease);
+}
+
+@keyframes arrive {
+    from {
+        opacity: 0;
+    }
+}
+
 @media (prefers-reduced-motion: no-preference) {
     .page-enter-active {
         transition: opacity var(--ae-duration-slow) var(--ae-ease);
@@ -166,17 +126,5 @@ body {
     .page-enter-from,
     .page-leave-to {
         opacity: 0;
-    }
-
-    .rise {
-        animation: rise 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
-        animation-delay: calc(var(--i, 0) * 70ms);
-    }
-
-    @keyframes rise {
-        from {
-            opacity: 0;
-            transform: translateY(12px);
-        }
     }
 }

@@ -24,7 +24,8 @@ useHead({
 </script>
 
 <template>
-  <section>
+  <section class="sheet">
+    <NuxtLink class="back" to="/"><span aria-hidden="true">←</span> Home</NuxtLink>
     <div class="sheet-head">
       <h1>Notes</h1>
       <a href="/rss.xml">RSS</a>
@@ -32,3 +33,14 @@ useHead({
     <NoteList/>
   </section>
 </template>
+
+<style scoped>
+.back {
+  display: inline-block;
+  margin-block-end: var(--ae-space-5);
+}
+
+.sheet-head {
+  margin-block-end: var(--ae-space-7);
+}
+</style>

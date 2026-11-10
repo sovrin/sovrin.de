@@ -46,7 +46,7 @@ export default defineCachedEventHandler(
             // The repo named after the account is GitHub's profile README, not a project.
             .filter((r) => !r.fork && !r.archived && !r.private && r.name !== githubUser)
             .sort((a, b) => Date.parse(b.pushed_at) - Date.parse(a.pushed_at))
-            .slice(0, 10)
+            .slice(0, 25)
             .map((r) => ({
                 name: r.name,
                 description: r.description,
