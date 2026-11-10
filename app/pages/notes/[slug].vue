@@ -59,10 +59,6 @@ useHead({
     <div class="body">
       <dl class="facts">
         <div>
-          <dt>By</dt>
-          <dd><NuxtLink to="/" rel="author">{{ name }}</NuxtLink></dd>
-        </div>
-        <div>
           <dt>Published</dt>
           <dd><time :datetime="note.date">{{ day(note.date) }}</time></dd>
         </div>
@@ -151,12 +147,6 @@ h1 {
   margin: 0;
 }
 
-.facts a {
-  color: var(--ae-text);
-  text-decoration: none;
-  transition: color 160ms ease-out;
-}
-
 .prose {
   max-inline-size: var(--ae-measure);
 }
@@ -211,7 +201,6 @@ h1 {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .facts a:hover,
   .next:hover a {
     color: var(--wall);
   }
