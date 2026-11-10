@@ -24,7 +24,7 @@ useHead({
 </script>
 
 <template>
-  <section>
+  <section class="sheet read">
     <div class="sheet-head">
       <h1>Notes</h1>
       <a href="/rss.xml">RSS</a>
@@ -32,3 +32,4 @@ useHead({
     <NoteList/>
   </section>
 </template>
+

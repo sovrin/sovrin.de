@@ -41,7 +41,7 @@ useHead({
 </script>
 
 <template>
-  <article v-if="note">
+  <article v-if="note" class="sheet read">
     <h1 class="note-title">{{ note.title }}</h1>
     <p class="meta">
       <NuxtLink to="/" rel="author">{{ name }}</NuxtLink>
@@ -54,7 +54,7 @@ useHead({
 </template>
 
 <style scoped>
-/* Set in the wall name's voice, a step below it, so the two don't compete. */
+/* Set in the name's voice, a step below it. */
 .note-title {
   margin-block: 0 var(--ae-space-3);
   font-size: var(--ae-text-3xl);
@@ -74,7 +74,7 @@ useHead({
   color: var(--ae-text-muted);
 }
 
-/* The byline: shared notes are where people arrive without the wall's name. */
+/* The byline: shared notes are where people arrive without home's name. */
 .meta a {
   color: var(--ae-text);
   text-decoration: none;
@@ -83,7 +83,7 @@ useHead({
 
 @media (hover: hover) and (pointer: fine) {
   .meta a:hover {
-    color: var(--ae-accent-ink);
+    color: var(--wall);
   }
 }
 

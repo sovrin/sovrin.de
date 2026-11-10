@@ -25,8 +25,8 @@ export default defineNuxtConfig({
     },
     app: {
         head: {
-            // Dark only. data-type="humanist" is aequitas' Geist preset.
-            htmlAttrs: {'lang': 'en', 'data-theme': 'dark', 'data-type': 'humanist'},
+            // Dark only. data-type="humanist" is aequitas' Geist preset; data-radius="soft" rounds its corners.
+            htmlAttrs: {'lang': 'en', 'data-theme': 'dark', 'data-type': 'humanist', 'data-radius': 'soft'},
             meta: [{name: 'theme-color', content: '#0f0e0c'}],
             link: [
                 {rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg'},
