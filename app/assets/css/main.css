@@ -29,16 +29,7 @@ body {
     box-shadow: none;
 }
 
-/* The prose measure as a length, fixed in the column's own font: every child
-   then keeps to the same width, whatever font it's set in. */
-@property --read {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 0px;
-}
-
-/* A page's column: the page width, centred, off the gutter. Pages that are
-   for reading keep to the prose measure inside it (.sheet.read). */
+/* A page's column: the page width, centred, off the gutter. */
 .sheet {
     box-sizing: border-box;
     inline-size: 100%;
@@ -47,17 +38,25 @@ body {
     padding: var(--ae-space-8) var(--gutter) 0;
 }
 
-.sheet.read {
-    --read: var(--ae-measure);
-}
-
-.sheet.read > * {
-    max-inline-size: var(--read);
-}
-
 .sections {
     display: grid;
     gap: calc(var(--ae-space-8) * 1.618);
+}
+
+/* The way up a level, over a page's title: home from the notes, the notes
+   from a note. */
+.back {
+    font-family: var(--ae-font-mono);
+    font-size: var(--ae-text-s);
+    color: var(--ae-text-muted);
+    text-decoration: none;
+    transition: color 160ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .back:hover {
+        color: var(--wall);
+    }
 }
 
 /* Section head: the title large, in the name's voice, and a muted aside. */
@@ -90,75 +89,6 @@ body {
 @media (hover: hover) and (pointer: fine) {
     .sheet-head a:hover {
         color: var(--ae-text);
-    }
-}
-
-/* A note row: title and date on one line, the description under both at full
-   width, rows ruled apart. The title link is stretched over the row
-   (::before), so the row is one target. */
-.entries {
-    margin: var(--ae-space-5) 0 0;
-    border-block-end: 1px solid var(--ae-border);
-}
-
-.entry {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-content: start;
-    gap: var(--ae-space-2) var(--ae-space-5);
-    padding-block: var(--ae-space-5);
-    border-block-start: 1px solid var(--ae-border);
-}
-
-.entry .title {
-    font-size: var(--ae-text-2xl);
-    font-weight: 650;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
-    color: var(--ae-text);
-    text-decoration: none;
-    transition: color 160ms ease-out;
-}
-
-.entry .title::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-}
-
-.entry .title:focus-visible {
-    outline: none;
-}
-
-.entry .title:focus-visible::before {
-    outline: 2px solid var(--wall);
-    outline-offset: 2px;
-}
-
-.entry .desc {
-    grid-column: 1 / -1;
-    color: var(--ae-text-muted);
-    text-wrap: pretty;
-}
-
-.entry .meta {
-    grid-column: 2;
-    grid-row: 1;
-    align-self: start;
-    padding-block-start: 0.6em;
-    display: flex;
-    gap: var(--ae-space-3);
-    font-family: var(--ae-font-mono);
-    font-size: var(--ae-text-s);
-    color: var(--ae-text-muted);
-}
-
-/* Real pointers only: a tap on touch would leave the row stuck 'hovered'. */
-@media (hover: hover) and (pointer: fine) {
-    .entry:hover .title {
-        color: var(--wall);
     }
 }
 

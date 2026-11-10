@@ -23,7 +23,7 @@ const parentOf = (p: Project) => p.description?.match(/^(.+?) module for (\S+)$/
 const modules = (name: string) => projects.value.filter((p) => !live(p) && parentOf(p)?.[2] === name)
 const listed = computed(() => projects.value.filter((p) => live(p) || !projects.value.some((q) => q.name === parentOf(p)?.[2])))
 
-// Live sites and families get a card each, stacking as the page scrolls; the rest is one row of names.
+// Live sites and families get a card each, stacking as the page scrolls; the rest a directory of names.
 const cards = computed(() => listed.value.filter((p) => live(p) || modules(p.name).length))
 const rest = computed(() => listed.value.filter((p) => !cards.value.includes(p)))
 const host = (url: string) => new URL(url).host
@@ -65,8 +65,9 @@ const host = (url: string) => new URL(url).host
 
     <ul v-if="rest.length" class="rest" data-variant="plain">
       <li v-for="p in rest" :key="p.name">
-        <a :href="p.url" target="_blank" rel="noreferrer">{{ p.name }}<span class="sr-only"> (opens in a new tab)</span></a>
-        <p><span>{{ p.description }}</span><span class="lang">{{ p.language }}</span></p>
+        <a :href="p.url" target="_blank" rel="noreferrer">{{ p.name }}<span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>
+        <p v-if="p.description">{{ p.description }}</p>
+        <span class="meta">{{ [p.language, month(p.pushedAt)].filter(Boolean).join(' · ') }}</span>
       </li>
     </ul>
   </section>
@@ -214,30 +215,43 @@ h3 {
   color: var(--ae-text-muted);
 }
 
-/* The rest as an index, a ruled line each, split like the cards above: the
-   name over their text, what it is over their pictures, the language last. */
+/* The rest as a directory: three across, each a name, what it is and when it
+   last moved, under one hairline a row. Names in the cards' voice, smaller. */
 .rest {
-  margin: var(--ae-space-7) 0 0;
-  border-block-end: 1px solid var(--ae-border);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: var(--ae-space-7) var(--ae-space-6);
+  margin: var(--ae-space-8) 0 0;
 }
 
 .rest li {
   position: relative;
-  display: grid;
-  grid-template-columns: 5fr 7fr;
-  align-items: baseline;
-  gap: var(--ae-space-1) var(--ae-space-6);
-  padding-block: var(--ae-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ae-space-2);
+  padding-block-start: var(--ae-space-4);
   border-block-start: 1px solid var(--ae-border);
 }
 
 .rest a {
-  font-size: var(--ae-text-l);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  align-self: start;
+  font-size: var(--ae-text-2xl);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
   color: var(--ae-text);
   text-decoration: none;
-  transition: color 160ms ease-out;
+  transition: color 200ms ease-out;
+}
+
+.rest a span[aria-hidden] {
+  display: inline-block;
+  margin-inline-start: 0.2em;
+  font-size: 0.7em;
+  color: var(--wall);
+  opacity: 0;
+  translate: -0.2em 0.2em;
+  transition: opacity 200ms ease-out, translate 400ms var(--ae-ease);
 }
 
 .rest a::before {
@@ -246,23 +260,40 @@ h3 {
   inset: 0;
 }
 
-.rest p {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--ae-space-5);
-  margin: 0;
-  color: var(--ae-text-muted);
+.rest a:focus-visible {
+  outline: none;
 }
 
-.rest .lang {
-  flex: none;
+.rest a:focus-visible::before {
+  outline: 2px solid var(--wall);
+  outline-offset: 4px;
+}
+
+.rest p {
+  margin: 0;
+  max-inline-size: 34ch;
+  color: var(--ae-text-muted);
+  text-wrap: pretty;
+}
+
+/* The language and month last, at the foot, so a row's metas line up. */
+.rest .meta {
+  margin-block-start: auto;
+  padding-block-start: var(--ae-space-3);
+  font-family: var(--ae-font-mono);
+  font-size: var(--ae-text-s);
+  color: var(--ae-text-muted);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .rest li:hover a,
   .mods a:hover {
     color: var(--wall);
+  }
+
+  .rest li:hover a span[aria-hidden] {
+    opacity: 1;
+    translate: 0 0;
   }
 
   .mods a:hover {
@@ -344,23 +375,6 @@ h3 {
 }
 
 @media (width < 52rem) {
-  /* Narrow: the name and language on a line, what it is under both. */
-  .rest li {
-    grid-template-columns: 1fr auto;
-  }
-
-  .rest p {
-    display: contents;
-  }
-
-  .rest .lang {
-    grid-area: 1 / 2;
-  }
-
-  .rest p > span:first-child {
-    grid-column: 1 / -1;
-  }
-
   .proj {
     grid-template-columns: 1fr;
     min-block-size: 0;
