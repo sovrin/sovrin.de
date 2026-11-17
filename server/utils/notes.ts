@@ -1,11 +1,12 @@
-// A note is one markdown file in content/notes with YAML frontmatter, rendered
-// here on the server so marked and shiki never reach the client. The owner
-// writes the files, so the output is trusted and unsanitised — never point
-// NUXT_CONTENT_DIR at a directory visitors can write to.
+// A note is an entry of the `notes` collection in veritas (see veritas.ts):
+// title and slug, plus date, description, tags and a markdown body.
+// It's rendered here on the server so marked and shiki never reach the client.
+// veritas delivers texts raw and marked doesn't sanitise, so the output is only
+// as trusted as whoever can edit the project's content — keep that the owner.
 import {Marked, type Tokens} from 'marked'
 import {bundledLanguages, createHighlighter, type BundledLanguage, type Highlighter} from 'shiki'
 import {createJavaScriptRegexEngine} from 'shiki/engine/javascript'
-import type {Doc} from './content'
+import type {Entry} from './veritas'
 
 export interface NoteMeta {
     slug: string
@@ -14,18 +15,14 @@ export interface NoteMeta {
     date: string
     description: string | null
     tags: string[]
-    // Unlisted: renders at its URL (noindex) but stays out of the list, feed and
-    // sitemap. Either `draft: true` in the frontmatter or a `_`-prefixed file name.
-    draft: boolean
 }
 
 export interface Note extends NoteMeta {
     html: string
 }
 
-// Slugs are file names, so keep them boring: no leading dot, no separators. A
-// leading underscore is allowed — it's the unlisted marker, see toMeta.
-const SLUG = /^[a-z0-9_][a-z0-9._-]{0,255}$/
+// veritas' own slug rule, checked before a visitor's slug goes into a CMS URL.
+const SLUG = /^[a-z0-9-]{1,128}$/
 
 export const parseSlug = (input: string): string | null => {
     const slug = input.trim().toLowerCase()
@@ -35,24 +32,17 @@ export const parseSlug = (input: string): string | null => {
 export const escapeHtml = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-const toDate = (value: unknown): Date | null => {
-    const d = value instanceof Date ? value : new Date(String(value))
-    return Number.isNaN(d.getTime()) ? null : d
-}
-
-// Frontmatter → metadata, or null for a file that can't be served (no title or
-// no usable date).
-const toMeta = (slug: string, data: Record<string, unknown>): NoteMeta | null => {
-    const date = toDate(data.date)
-    if (typeof data.title !== 'string' || !date) return null
+// An entry → metadata, or null for one that can't be served: veritas delivers
+// an empty Date field as "".
+const toMeta = ({slug, ...data}: Entry): NoteMeta | null => {
+    if (typeof data.title !== 'string' || typeof data.date !== 'string' || !data.date) return null
 
     return {
         slug,
         title: data.title,
-        date: date.toISOString().slice(0, 10),
-        description: typeof data.description === 'string' ? data.description : null,
+        date: data.date,
+        description: typeof data.description === 'string' && data.description ? data.description : null,
         tags: Array.isArray(data.tags) ? data.tags.filter((t): t is string => typeof t === 'string') : [],
-        draft: data.draft === true || slug.startsWith('_'),
     }
 }
 
@@ -96,35 +86,26 @@ const md = new Marked({
     },
 })
 
-// Rendered once per file version: readEntry returns the same Doc object until
-// the file changes, so this cache empties itself. A failed render is dropped so
-// the next request retries instead of replaying the error.
-const rendered = new WeakMap<Doc, Promise<string>>()
-const render = (doc: Doc) => {
-    let html = rendered.get(doc)
-    if (!html) {
-        html = md.parse(doc.body, {async: true})
-        rendered.set(doc, html)
-        html.catch(() => rendered.delete(doc))
-    }
-    return html
-}
+// Published notes, newest first — what the list, the feed and the sitemap show.
+// Cached a minute across visitors (stale served while it refreshes), so saving
+// in the CMS shows up within that, and a burst of visits is one CMS request.
+export const getNotes = defineCachedFunction(async (): Promise<NoteMeta[]> =>
+    (await getEntries('notes', ['title', 'date', 'description', 'tags']))
+        .flatMap((entry) => toMeta(entry) ?? [])
+        .sort((a, b) => b.date.localeCompare(a.date)),
+{name: 'notes', maxAge: 60})
 
-// Published notes only, newest first — what the list, the feed and the sitemap show.
-export const getNotes = async (): Promise<NoteMeta[]> =>
-    (await readEntries('notes'))
-        .flatMap(({slug, data}) => toMeta(slug, data) ?? [])
-        .filter((n) => !n.draft)
-        .sort((a, b) => b.date.localeCompare(a.date))
+// One rendered note. Only hits are cached: the slug comes from the URL, and a
+// bot walking random ones must not grow the cache.
+const fetchNote = defineCachedFunction(async (slug: string): Promise<Note | null> => {
+    const entry = await getEntry('notes', slug)
+    const note = entry && toMeta(entry)
+    if (!note) return null
 
-// One note by slug, drafts included — sharing the URL is how a draft gets read.
+    return {...note, html: await md.parse(String(entry.body ?? ''), {async: true})}
+}, {name: 'note', maxAge: 60, getKey: (slug: string) => slug, validate: (entry) => entry.value != null})
+
 export const getNote = async (input: string): Promise<Note | null> => {
     const slug = parseSlug(input)
-    if (!slug) return null
-
-    const doc = await readEntry(`notes/${slug}.md`)
-    const note = doc && toMeta(slug, doc.data)
-    if (!doc || !note) return null
-
-    return {...note, html: await render(doc)}
+    return slug ? fetchNote(slug) : null
 }

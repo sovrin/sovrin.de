@@ -5,7 +5,8 @@ const entry = (loc: string, lastmod?: string) =>
 
 export default defineEventHandler(async (event) => {
     const url = getRequestURL(event, {xForwardedHost: true}).origin
-    const notes = await getNotes()
+    // CMS down with nothing cached: the fixed pages are still worth listing.
+    const notes = await getNotes().catch(() => [])
     const urls = [
         entry(`${url}/`),
         entry(`${url}/notes`, notes[0]?.date),

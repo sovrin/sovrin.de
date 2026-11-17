@@ -16,8 +16,7 @@ if (!note.value) {
   })
 }
 
-// The next note to read: the one before this, or, from the oldest (or a
-// draft), the newest. Same key as NoteList, so it's one request.
+// The next note to read: the one before this, or, from the oldest, the newest. Same key as NoteList, so it's one request.
 const {data: notes} = await useFetch<NoteMeta[]>('/api/notes', {key: 'notes', default: () => []})
 const next = computed(() => {
   const others = notes.value.filter((n) => n.slug !== slug)
@@ -32,8 +31,6 @@ useHead({
   title: `${current.title} · ${name}`,
   link: [{rel: 'canonical', href: canonical}],
   meta: [
-    // A draft is reachable by its URL but must not be indexed or previewed.
-    ...(current.draft ? [{name: 'robots', content: 'noindex, nofollow'}] : []),
     {name: 'description', content: description},
     {property: 'og:type', content: 'article'},
     {property: 'og:site_name', content: user},
@@ -65,10 +62,6 @@ useHead({
         <div v-if="note.tags.length">
           <dt>About</dt>
           <dd>{{ note.tags.join(', ') }}</dd>
-        </div>
-        <div v-if="note.draft">
-          <dt>Status</dt>
-          <dd><span class="badge" data-tone="warning">{{ note.slug.startsWith('_') ? 'unlisted' : 'draft' }}</span></dd>
         </div>
       </dl>
       <div class="prose" v-html="note.html"/>

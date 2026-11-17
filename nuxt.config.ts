@@ -15,9 +15,9 @@ export default defineNuxtConfig({
     runtimeConfig: {
         // Optional PAT to lift GitHub's 60/h unauthenticated rate limit. Set via NUXT_GITHUB_TOKEN.
         githubToken: '',
-        // Directory holding the markdown notes (content/notes). Set via NUXT_CONTENT_DIR;
-        // empty means <cwd>/content, which is where docker-compose mounts it.
-        contentDir: '',
+        // The notes: veritas on nexitas, read with the project's delivery token.
+        // Set via NUXT_CMS_URL (nexitas' origin), NUXT_CMS_PROJECT, NUXT_CMS_TOKEN.
+        cms: {url: '', project: '', token: ''},
         public: {
             // GitHub account whose latest repos are listed. Override via NUXT_PUBLIC_GITHUB_USER.
             githubUser: 'sovrin',

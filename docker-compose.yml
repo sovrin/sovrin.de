@@ -16,5 +16,6 @@ services:
       PORT: 3000
       # From .env next to this file; unauthenticated, the server's IP shares GitHub's 60/h limit.
       NUXT_GITHUB_TOKEN: ${NUXT_GITHUB_TOKEN:-}
-    volumes:
-      - ./content:/app/content:ro
+      NUXT_CMS_URL: ${NUXT_CMS_URL:?}
+      NUXT_CMS_PROJECT: ${NUXT_CMS_PROJECT:?}
+      NUXT_CMS_TOKEN: ${NUXT_CMS_TOKEN:?}
