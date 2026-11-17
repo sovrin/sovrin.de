@@ -1,3 +1,2 @@
-// Published notes, newest first. Not cached: the content dir is live and the
-// reader already memoises on file signatures.
+// Published notes, newest first. Not cached here: getNotes already is.
 export default defineEventHandler(() => getNotes())

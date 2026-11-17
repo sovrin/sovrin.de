@@ -15,10 +15,6 @@ pnpm-lock.yaml
 logs
 *.log
 
-content/**
-!content/**/
-!content/**/_*.md
-
 # Misc
 .DS_Store
 .fleet
