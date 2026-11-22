@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type {Project} from '~~/server/api/projects.get'
+import type {Activity} from '~~/server/api/activity.get'
 
-// SSR-fetched from our own cached endpoint, so the list is in the initial HTML
-// but the GitHub call itself lives server-side (cached), never in the bundle.
-const {data: projects} = await useFetch<Project[]>('/api/projects', {
-  default: () => [],
-})
+// SSR-fetched from our own cached endpoints, so the list is in the initial HTML
+// but the GitHub calls themselves live server-side (cached), never in the bundle.
+const [{data: projects}, {data: activity}] = await Promise.all([
+  useFetch<Project[]>('/api/projects', {default: () => []}),
+  useFetch<Activity>('/api/activity'),
+])
 // GitHub down or rate-limited with nothing cached: the section still points at the work.
 const {github, mac: macCopy} = useAppConfig().portfolio
 
@@ -41,8 +43,14 @@ const host = (url: string) => new URL(url).host
 
 <template>
   <section aria-labelledby="work">
-    <div class="sheet-head">
+    <div class="sheet-head" :class="{split: activity?.levels.length}">
       <h2 id="work">Work</h2>
+      <figure v-if="activity?.levels.length" class="activity">
+        <figcaption aria-hidden="true">{{ activity.total.toLocaleString('en') }} contributions in the last year</figcaption>
+        <div class="days" role="img" :aria-label="`${activity.total.toLocaleString('en')} GitHub contributions in the last year`">
+          <i v-for="(l, i) in activity.levels" :key="i" :data-l="l"/>
+        </div>
+      </figure>
     </div>
 
     <p v-if="!projects.length" class="none">
@@ -84,6 +92,51 @@ const host = (url: string) => new URL(url).host
 </template>
 
 <style scoped>
+/* The last year on GitHub in the head's 7 column, on the 5:7 split like
+   everything else: a week a column, quiet days in greys, busy ones in the
+   yellow. Plain markup, so it's there without JavaScript. */
+.split {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  align-items: end;
+  gap: var(--ae-space-5) var(--ae-space-6);
+}
+
+.activity {
+  display: grid;
+  gap: var(--ae-space-2);
+  margin: 0;
+}
+
+.days {
+  display: grid;
+  grid-template-rows: repeat(7, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+}
+
+.days i {
+  aspect-ratio: 1;
+  background: color-mix(in oklch, var(--ae-text) 7%, var(--ae-bg));
+}
+
+.days [data-l="1"] {
+  background: color-mix(in oklch, var(--ae-text) 22%, var(--ae-bg));
+}
+
+.days [data-l="2"] {
+  background: color-mix(in oklch, var(--ae-text) 45%, var(--ae-bg));
+}
+
+.days :is([data-l="3"], [data-l="4"]) {
+  background: var(--wall);
+}
+
+.activity figcaption {
+  justify-self: end;
+}
+
 .deck {
   display: grid;
   gap: var(--ae-space-5);
@@ -385,6 +438,10 @@ h3 {
 }
 
 @media (width < 52rem) {
+  .split {
+    grid-template-columns: 1fr;
+  }
+
   .proj {
     grid-template-columns: 1fr;
     min-block-size: 0;
