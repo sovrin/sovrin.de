@@ -11,6 +11,8 @@ export default defineAppConfig({
         github: 'https://github.com/sovrin',
         linkedin: 'https://www.linkedin.com/in/oleg-kamlowski-2166a224b/',
         mailbox: 'hello',
+        // The card that gathers the repos described as "Native macOS …".
+        mac: 'Native apps for the Mac, each doing one small job.',
         // The footer's Score, as its guide on the board says it: what it is,
         // how to play it (add, bend, remove) and what plays along.
         score: {

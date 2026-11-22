@@ -7,7 +7,7 @@ const {data: projects} = await useFetch<Project[]>('/api/projects', {
   default: () => [],
 })
 // GitHub down or rate-limited with nothing cached: the section still points at the work.
-const {github} = useAppConfig().portfolio
+const {github, mac: macCopy} = useAppConfig().portfolio
 
 // Screenshots of deployed projects, app/assets/work/<repo>.jpg. Resolved at
 // build time, so there is never a broken image for a repo without a shot.
@@ -18,13 +18,23 @@ const shots = Object.fromEntries(
 const live = (p: Project) => Boolean(p.homepage && shots[p.name])
 
 // A repo described as "<what> module for <repo>" belongs to that repo's card,
-// as one family, instead of a row of near-twins.
-const parentOf = (p: Project) => p.description?.match(/^(.+?) module for (\S+)$/)
-const modules = (name: string) => projects.value.filter((p) => !live(p) && parentOf(p)?.[2] === name)
-const listed = computed(() => projects.value.filter((p) => live(p) || !projects.value.some((q) => q.name === parentOf(p)?.[2])))
+// one described as "Native macOS <what>" to a card of the Mac apps, each as
+// one family instead of a row of near-twins.
+const mac: Project = {name: 'macOS', description: macCopy, url: `${github}?tab=repositories&q=macOS`, homepage: null, language: null, stars: 0, pushedAt: ''}
+const familyOf = (p: Project): [what: string, parent: string] | undefined => {
+  if (live(p)) return
+  const mod = p.description?.match(/^(.+?) module for (\S+)$/)
+  if (mod) return [mod[1], mod[2]]
+  const app = p.description?.match(/^Native macOS (.+)$/)
+  if (app) return [app[1], mac.name]
+}
+const members = (name: string) => projects.value.filter((p) => familyOf(p)?.[1] === name)
+// The Mac card stands where its latest app would; a module of a listed repo goes into its card.
+const listed = computed(() => [...new Set(projects.value.map((p) => familyOf(p)?.[1] === mac.name ? mac : p))]
+  .filter((p) => !projects.value.some((q) => q.name === familyOf(p)?.[1])))
 
 // Live sites and families get a card each, stacking as the page scrolls; the rest a directory of names.
-const cards = computed(() => listed.value.filter((p) => live(p) || modules(p.name).length))
+const cards = computed(() => listed.value.filter((p) => live(p) || members(p.name).length))
 const rest = computed(() => listed.value.filter((p) => !cards.value.includes(p)))
 const host = (url: string) => new URL(url).host
 </script>
@@ -42,7 +52,7 @@ const host = (url: string) => new URL(url).host
     <ul v-if="cards.length" class="deck" data-variant="plain" :style="{'--n': cards.length}">
       <li v-for="(p, i) in cards" :key="p.name" class="proj" :style="{'--i': i}">
         <div class="text">
-          <span class="lang">{{ [p.language, modules(p.name).length && `${modules(p.name).length} modules`].filter(Boolean).join(' · ') }}</span>
+          <span class="lang">{{ [p.language, members(p.name).length && `${members(p.name).length} ${p === mac ? 'apps' : 'modules'}`].filter(Boolean).join(' · ') }}</span>
           <div>
             <h3>{{ p.name }}</h3>
             <p v-if="p.description">{{ p.description }}</p>
@@ -55,9 +65,9 @@ const host = (url: string) => new URL(url).host
           <img :src="shots[p.name]" :alt="`The ${p.name} homepage`" width="1200" height="750" loading="lazy">
         </div>
         <ul v-else class="mods" data-variant="plain">
-          <li v-for="m in modules(p.name)" :key="m.name">
+          <li v-for="m in members(p.name)" :key="m.name">
             <a :href="m.url" target="_blank" rel="noreferrer">{{ m.name }}<span class="sr-only"> (opens in a new tab)</span></a>
-            <span>{{ parentOf(m)![1] }}</span>
+            <span>{{ familyOf(m)![0] }}</span>
           </li>
         </ul>
       </li>
