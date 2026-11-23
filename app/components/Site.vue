@@ -78,8 +78,10 @@ const year = new Date().getFullYear()
   grid-area: 1 / 1;
 }
 
+/* Both insets, or a sheet's auto margins stop centring it (wide screens). */
 .content > :deep(.page-leave-active) {
   position: absolute;
+  inset-inline: 0;
 }
 
 /* Yellow at the bottom of every page: the one place to write to him, as loud

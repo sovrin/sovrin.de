@@ -75,14 +75,19 @@ useHead({
 </template>
 
 <style scoped>
-/* The title at the section heads' size, across the page; the note itself
-   split 5:7 below it like the rest of the site: the facts held on the left,
-   the prose over the pictures' column. */
+/* The title at the section heads' size, across the page, and everything else
+   split 5:7 like the rest of the site: the dek over the prose, the facts held
+   on the left, the prose over the pictures' column. */
 .head {
   display: grid;
+  grid-template-columns: 5fr 7fr;
   justify-items: start;
-  gap: var(--ae-space-5);
+  gap: var(--ae-space-5) var(--ae-space-6);
   padding-block-end: var(--ae-space-7);
+}
+
+.head > :is(.back, h1) {
+  grid-column: 1 / -1;
 }
 
 h1 {
@@ -96,6 +101,7 @@ h1 {
 }
 
 .dek {
+  grid-column: 2;
   margin: 0;
   max-inline-size: 36ch;
   font-size: clamp(1.15rem, 1.5vw, 1.4rem);
@@ -140,8 +146,10 @@ h1 {
   margin: 0;
 }
 
+/* A step over the body size: a note is read, not skimmed. */
 .prose {
   max-inline-size: var(--ae-measure);
+  font-size: 1.125rem;
 }
 
 .prose > :first-child {
@@ -200,9 +208,14 @@ h1 {
 }
 
 @media (width < 52rem) {
+  .head,
   .body,
   .next {
     grid-template-columns: 1fr;
+  }
+
+  .dek {
+    grid-column: auto;
   }
 
   /* Narrow: the facts a line above the prose, not a column beside it. */

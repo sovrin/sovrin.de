@@ -12,10 +12,20 @@ const freeze = (el: Element) => {
 }
 // On enter, not leave: only once the new page is in can the window reach a saved position.
 const land = () => scrollTo(0, target())
+
+// A swipe back has already shown the page (the browser's own animation); a
+// crossfade would replay it. No class matches 'none', so the swap is instant.
+const name = ref('page')
+onMounted(() => addEventListener('popstate', (e) => {
+  if (e.hasUAVisualTransition) name.value = 'none'
+}))
+const settle = () => {
+  name.value = 'page'
+}
 </script>
 
 <template>
   <Site>
-    <NuxtPage :transition="{name: 'page', onBeforeLeave: freeze, onEnter: land}"/>
+    <NuxtPage :transition="{name, onBeforeLeave: freeze, onEnter: land, onAfterEnter: settle}"/>
   </Site>
 </template>
