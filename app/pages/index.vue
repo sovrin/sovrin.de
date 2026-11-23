@@ -78,18 +78,35 @@ useHead({
 </template>
 
 <style scoped>
+/* The first screen as one picture: the headline across the top, the
+   standfirst on the fold, Work just under it. */
 .front {
+  container-type: inline-size;
   box-sizing: border-box;
   display: grid;
+  grid-template-rows: auto 1fr;
   gap: clamp(var(--ae-space-6), 5vw, var(--ae-space-8));
   max-inline-size: var(--page);
   margin-inline: auto;
-  padding: clamp(var(--ae-space-7), 9vw, 9rem) var(--gutter) clamp(var(--ae-space-6), 8vw, 8rem);
+  padding: clamp(var(--ae-space-6), 6vw, 6rem) var(--gutter) var(--ae-space-6);
 }
 
+/* Wide: a poster, never taller than the fold and never taller than 12:5, so
+   the Work head comes up before the first screen ends. The nav (Site.vue) is
+   the 36px mark and its padding. */
+@media (width >= 52rem) {
+  .front {
+    min-block-size: min(calc(100svh - 36px - 2 * var(--ae-space-5)), 42vw, 46rem);
+  }
+}
+
+/* Sized to the column, not the window, so the longer line runs edge to edge
+   at any width the page reaches: 10.32em in Geist (measured on the live
+   site), so 97% of the column; the fallback (9.19em) is narrower. Judge it in
+   a build: dev ends up in the fallback (CLAUDE.md). */
 .greet {
   margin: 0;
-  font-size: clamp(3rem, 6.6vw, 7.25rem);
+  font-size: clamp(3rem, 9.4cqi, 9rem);
   font-weight: 600;
   letter-spacing: -0.055em;
   line-height: 0.95;
@@ -145,6 +162,7 @@ useHead({
 /* The standfirst under the headline: a hairline row split like the project
    cards below: the about on the headline's edge, the profiles over the pictures. */
 .side {
+  align-self: end;
   display: grid;
   grid-template-columns: 5fr 7fr;
   align-items: end;
@@ -174,9 +192,11 @@ useHead({
   color: color-mix(in oklch, var(--ae-text) 82%, transparent);
 }
 
+/* At the row's far end, so the row closes on the page's edge. */
 .reach {
   display: flex;
   flex-wrap: wrap;
+  justify-content: end;
   gap: var(--ae-space-3);
 }
 
@@ -268,6 +288,10 @@ useHead({
 @media (width < 52rem) {
   .side {
     grid-template-columns: 1fr;
+  }
+
+  .reach {
+    justify-content: start;
   }
 }
 </style>

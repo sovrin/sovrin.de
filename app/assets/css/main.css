@@ -44,10 +44,10 @@ body {
 }
 
 /* The way up a level, over a page's title: home from the notes, the notes
-   from a note. */
+   from a note. A way to go, so it reads in the text's voice; mono is for
+   metadata. */
 .back {
-    font-family: var(--ae-font-mono);
-    font-size: var(--ae-text-s);
+    font-size: var(--ae-text-m);
     color: var(--ae-text-muted);
     text-decoration: none;
     transition: color 160ms ease-out;
@@ -82,6 +82,8 @@ body {
 }
 
 .sheet-head a {
+    font-family: var(--ae-font-sans);
+    font-size: var(--ae-text-m);
     color: inherit;
     transition: color 160ms ease-out;
 }
@@ -90,6 +92,40 @@ body {
     .sheet-head a:hover {
         color: var(--ae-text);
     }
+}
+
+/* Pictures in a note sit in the site's material: the card radius and a
+   hairline, so a screenshot's own dark edge doesn't bleed into the page. */
+.prose img {
+    border-radius: var(--ae-radius-m);
+    outline: 1px solid var(--ae-border);
+    outline-offset: -1px;
+}
+
+/* Lists in a note: a small yellow square for a bullet, the shape and colour
+   the site already speaks in, numbers in the metadata's mono. A picture in an
+   item gets a line of its own under its name. */
+.prose ul {
+    list-style-type: square;
+}
+
+.prose li::marker {
+    color: var(--wall);
+}
+
+.prose ol > li::marker {
+    font-family: var(--ae-font-mono);
+    font-size: 0.85em;
+    color: var(--ae-text-muted);
+}
+
+.prose li + li {
+    margin-block-start: var(--ae-space-2);
+}
+
+.prose li > img {
+    display: block;
+    margin-block: var(--ae-space-3) var(--ae-space-4);
 }
 
 /* Shiki inlines its theme background; the aequitas code block is the surface. */
@@ -114,17 +150,20 @@ body {
 
 @media (prefers-reduced-motion: no-preference) {
     .page-enter-active {
-        transition: opacity var(--ae-duration-slow) var(--ae-ease);
+        transition: opacity var(--ae-duration-slow) var(--ae-ease), filter var(--ae-duration-slow) var(--ae-ease);
     }
 
     /* The leaving page goes quicker, so two pages of text are hardly ever seen
        on top of each other. */
     .page-leave-active {
-        transition: opacity var(--ae-duration-fast) var(--ae-ease);
+        transition: opacity var(--ae-duration-fast) var(--ae-ease), filter var(--ae-duration-fast) var(--ae-ease);
     }
 
+    /* Out of focus and into it, like the hero's lines (index.vue): blurred,
+       the two pages read as one picture changing, not two stacked. */
     .page-enter-from,
     .page-leave-to {
         opacity: 0;
+        filter: blur(4px);
     }
 }

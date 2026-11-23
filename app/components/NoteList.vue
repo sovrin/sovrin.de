@@ -78,8 +78,7 @@ const groups = computed(() => {
 }
 
 .side a {
-  font-family: var(--ae-font-mono);
-  font-size: var(--ae-text-s);
+  font-size: var(--ae-text-m);
   color: var(--ae-text-muted);
   transition: color 160ms ease-out;
 }
@@ -119,8 +118,6 @@ const groups = computed(() => {
   display: inline-block;
   margin-inline-start: 0.3em;
   color: var(--wall);
-  opacity: 0;
-  translate: -0.3em 0;
   transition: opacity 200ms ease-out, translate 400ms var(--ae-ease);
 }
 
@@ -148,8 +145,14 @@ const groups = computed(() => {
   text-wrap: pretty;
 }
 
-/* Real pointers only: a tap on touch would leave the note stuck 'hovered'. */
+/* Real pointers only: a tap on touch would leave the note stuck 'hovered'.
+   Touch keeps the arrow showing, the one cue that the note is a link. */
 @media (hover: hover) and (pointer: fine) {
+  .title span {
+    opacity: 0;
+    translate: -0.3em 0;
+  }
+
   .entry:hover .title {
     color: var(--wall);
   }

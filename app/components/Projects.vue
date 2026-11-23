@@ -35,7 +35,7 @@ const members = (name: string) => projects.value.filter((p) => familyOf(p)?.[1] 
 const listed = computed(() => [...new Set(projects.value.map((p) => familyOf(p)?.[1] === mac.name ? mac : p))]
   .filter((p) => !projects.value.some((q) => q.name === familyOf(p)?.[1])))
 
-// Live sites and families get a card each, stacking as the page scrolls; the rest a directory of names.
+// Live sites and families get a card each, stacking as the page scrolls; the rest a ledger of names.
 const cards = computed(() => listed.value.filter((p) => live(p) || members(p.name).length))
 const rest = computed(() => listed.value.filter((p) => !cards.value.includes(p)))
 const host = (url: string) => new URL(url).host
@@ -84,17 +84,20 @@ const host = (url: string) => new URL(url).host
     <ul v-if="rest.length" class="rest" data-variant="plain">
       <li v-for="p in rest" :key="p.name">
         <a :href="p.url" target="_blank" rel="noreferrer">{{ p.name }}<span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>
-        <p v-if="p.description">{{ p.description }}</p>
-        <span class="meta">{{ [p.language, month(p.pushedAt)].filter(Boolean).join(' · ') }}</span>
+        <div class="about">
+          <p v-if="p.description">{{ p.description }}</p>
+          <span class="meta">{{ [p.language, month(p.pushedAt)].filter(Boolean).join(' · ') }}</span>
+        </div>
       </li>
     </ul>
   </section>
 </template>
 
 <style scoped>
-/* The last year on GitHub in the head's 7 column, on the 5:7 split like
-   everything else: a week a column, quiet days in greys, busy ones in the
-   yellow. Plain markup, so it's there without JavaScript. */
+/* The last year on GitHub at the end of the head's 7 column, on the 5:7 split
+   like everything else: a week a column, in greys only and kept small, so the
+   yellow card under it stays the one loud thing. Plain markup, so it's there
+   without JavaScript. */
 .split {
   display: grid;
   grid-template-columns: 5fr 7fr;
@@ -103,8 +106,10 @@ const host = (url: string) => new URL(url).host
 }
 
 .activity {
+  justify-self: end;
   display: grid;
   gap: var(--ae-space-2);
+  inline-size: min(100%, 30rem);
   margin: 0;
 }
 
@@ -118,19 +123,23 @@ const host = (url: string) => new URL(url).host
 
 .days i {
   aspect-ratio: 1;
-  background: color-mix(in oklch, var(--ae-text) 7%, var(--ae-bg));
+  background: color-mix(in oklch, var(--ae-text) 6%, var(--ae-bg));
 }
 
 .days [data-l="1"] {
-  background: color-mix(in oklch, var(--ae-text) 22%, var(--ae-bg));
+  background: color-mix(in oklch, var(--ae-text) 18%, var(--ae-bg));
 }
 
 .days [data-l="2"] {
-  background: color-mix(in oklch, var(--ae-text) 45%, var(--ae-bg));
+  background: color-mix(in oklch, var(--ae-text) 34%, var(--ae-bg));
 }
 
-.days :is([data-l="3"], [data-l="4"]) {
-  background: var(--wall);
+.days [data-l="3"] {
+  background: color-mix(in oklch, var(--ae-text) 55%, var(--ae-bg));
+}
+
+.days [data-l="4"] {
+  background: color-mix(in oklch, var(--ae-text) 80%, var(--ae-bg));
 }
 
 .activity figcaption {
@@ -165,7 +174,7 @@ const host = (url: string) => new URL(url).host
 /* The first card in the yellow. */
 .proj:first-child {
   --ae-text: var(--wall-ink);
-  --ae-text-muted: color-mix(in oklch, var(--wall-ink) 65%, transparent);
+  --ae-text-muted: color-mix(in oklch, var(--wall-ink) 75%, transparent);
   background: var(--wall);
   color: var(--wall-ink);
   box-shadow: 0 -1.5rem 3rem -1.5rem rgb(0 0 0 / 0.7);
@@ -184,12 +193,15 @@ const host = (url: string) => new URL(url).host
   color: var(--ae-text-muted);
 }
 
+/* A step under the section heads, so "Work" reads as the head and a card's
+   name as one of its entries. Long repo names break rather than spill. */
 h3 {
   margin: 0 0 var(--ae-space-3);
-  font-size: clamp(2.5rem, 5vw, 4.75rem);
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
   font-weight: 650;
   letter-spacing: -0.055em;
   line-height: 0.9;
+  overflow-wrap: anywhere;
   color: var(--ae-text);
 }
 
@@ -278,26 +290,34 @@ h3 {
   color: var(--ae-text-muted);
 }
 
-/* The rest as a directory: three across, each a name, what it is and when it
-   last moved, under one hairline a row. Names in the cards' voice, smaller. */
+/* The rest as a ledger on the 5:7 split, a row each: the name in the cards'
+   voice, smaller, what it is under the activity chart, the language and month
+   at the row's end, so every row reads the same way. */
 .rest {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
-  gap: var(--ae-space-7) var(--ae-space-6);
   margin: var(--ae-space-8) 0 0;
+  border-block-end: 1px solid var(--ae-border);
 }
 
 .rest li {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ae-space-2);
-  padding-block-start: var(--ae-space-4);
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  align-items: baseline;
+  gap: var(--ae-space-2) var(--ae-space-6);
+  padding-block: var(--ae-space-4);
   border-block-start: 1px solid var(--ae-border);
 }
 
+.about {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--ae-space-1) var(--ae-space-5);
+}
+
 .rest a {
-  align-self: start;
+  justify-self: start;
   font-size: var(--ae-text-2xl);
   font-weight: 650;
   letter-spacing: -0.045em;
@@ -312,8 +332,6 @@ h3 {
   margin-inline-start: 0.2em;
   font-size: 0.7em;
   color: var(--wall);
-  opacity: 0;
-  translate: -0.2em 0.2em;
   transition: opacity 200ms ease-out, translate 400ms var(--ae-ease);
 }
 
@@ -332,23 +350,31 @@ h3 {
   outline-offset: 4px;
 }
 
+/* Shrinks before the meta has to wrap under it. */
 .rest p {
+  flex: 1 1 20ch;
   margin: 0;
-  max-inline-size: 34ch;
+  max-inline-size: 56ch;
   color: var(--ae-text-muted);
   text-wrap: pretty;
 }
 
-/* The language and month last, at the foot, so a row's metas line up. */
+/* At the row's end, so the column of metas lines up on the right. */
 .rest .meta {
-  margin-block-start: auto;
-  padding-block-start: var(--ae-space-3);
+  margin-inline-start: auto;
+  white-space: nowrap;
   font-family: var(--ae-font-mono);
   font-size: var(--ae-text-s);
   color: var(--ae-text-muted);
 }
 
+/* Touch keeps the ↗ showing, the one cue that a row is a link. */
 @media (hover: hover) and (pointer: fine) {
+  .rest a span[aria-hidden] {
+    opacity: 0;
+    translate: -0.2em 0.2em;
+  }
+
   .rest li:hover a,
   .mods a:hover {
     color: var(--wall);
@@ -442,13 +468,44 @@ h3 {
     grid-template-columns: 1fr;
   }
 
-  .proj {
-    grid-template-columns: 1fr;
-    min-block-size: 0;
+  /* Narrow, a week shrinks to a few pixels: the count alone says it. */
+  .days {
+    display: none;
   }
 
-  .mods {
+  .activity {
+    justify-self: start;
+  }
+
+  .activity figcaption {
+    justify-self: start;
+  }
+
+  /* Narrow: one after another, no pile. A family card runs taller than a
+     phone's screen, and a stuck card would hide its own last rows. */
+  .proj {
+    position: static;
     grid-template-columns: 1fr;
+    min-block-size: 0;
+    animation: none;
+  }
+
+  .mods,
+  .rest li {
+    grid-template-columns: 1fr;
+  }
+
+  /* Narrow: the meta always a line of its own, never beside some and under others. */
+  .about {
+    flex-direction: column;
+  }
+
+  .rest p {
+    flex: none;
+  }
+
+  .rest .meta {
+    margin-inline-start: 0;
   }
 }
 
